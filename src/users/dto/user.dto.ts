@@ -2,8 +2,7 @@ import { IsNotEmpty, IsString } from 'class-validator';
 
 export class UserDto {
   @IsString()
-  @IsNotEmpty()
-  name: string;
+  nickname: string;
 
   @IsString()
   @IsNotEmpty()
@@ -14,6 +13,8 @@ export class UserDto {
   password: string;
 
   @IsString()
-  @IsNotEmpty()
-  role: string;
+  provider: string;
+
+  @IsString()
+  status: string;
 }

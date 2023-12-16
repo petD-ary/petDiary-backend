@@ -4,9 +4,9 @@ import { Table, Column, Model, DataType } from 'sequelize-typescript';
 export class User extends Model<User> {
   @Column({
     type: DataType.STRING,
-    allowNull: false,
+    unique: true,
   })
-  name: string;
+  nickname: string;
 
   @Column({
     type: DataType.STRING,
@@ -22,9 +22,14 @@ export class User extends Model<User> {
   password: string;
 
   @Column({
-    type: DataType.ENUM,
-    values: ['admin', 'user'],
+    type: DataType.STRING,
     allowNull: false,
   })
-  role: string;
+  provider: string;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
+  status: string;
 }
