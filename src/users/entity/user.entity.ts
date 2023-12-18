@@ -1,4 +1,5 @@
-import { Table, Column, Model, DataType } from 'sequelize-typescript';
+import { Table, Column, Model, DataType, HasMany } from 'sequelize-typescript';
+import { Pet } from 'src/pets/entity/pet.entity';
 
 @Table
 export class User extends Model<User> {
@@ -32,4 +33,7 @@ export class User extends Model<User> {
     allowNull: false,
   })
   status: string;
+
+  @HasMany(() => Pet)
+  pets: Pet[];
 }

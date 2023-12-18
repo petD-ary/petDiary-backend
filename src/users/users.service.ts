@@ -9,21 +9,25 @@ import * as bcrypt from 'bcrypt';
 import { AuthService } from 'src/auth/auth.service';
 import { UserDto } from './dto/user.dto';
 import { User } from './entity/user.entity';
+import { PetDto } from 'src/pets/dto/pet.dto';
+import { Pet } from 'src/pets/entity/pet.entity';
 
 @Injectable()
 export class UsersService {
   constructor(private authService: AuthService) {}
-  async create(value: UserDto) {
-    const user = await this.getByEmail(value);
-    if (user) {
+  async create(body: { user: UserDto; pet: PetDto }) {
+    const duplicatedUser = await this.getByEmail(body.user);
+    if (duplicatedUser) {
       return new ConflictException('duplicate email');
     }
-    if (!value.provider) {
-      value.provider = 'petDiary';
+    if (!body.user.provider) {
+      body.user.provider = 'petDiary';
     }
-    value.status = 'active';
-    value.password = await this.hashPassword(value.password);
-    await User.create(value);
+    body.user.status = 'active';
+    body.user.password = await this.hashPassword(body.user.password);
+    const user = await User.create(body.user);
+    body.pet.userId = user.id;
+    await Pet.create(body.pet);
     return;
   }
 

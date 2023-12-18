@@ -1,5 +1,6 @@
 import { Sequelize } from 'sequelize-typescript';
 import { User } from 'src/users/entity/user.entity';
+import { Pet } from 'src/pets/entity/pet.entity';
 
 export const databaseProviders = [
   {
@@ -11,7 +12,7 @@ export const databaseProviders = [
         process.env.POSTGRES_PASSWORD,
         { host: 'localhost', dialect: 'postgres', port: +process.env.DB_PORT },
       );
-      sequelize.addModels([User]);
+      sequelize.addModels([User, Pet]);
       try {
         await sequelize.authenticate();
         await sequelize.sync();
