@@ -6,7 +6,6 @@ import {
   Delete,
   UseGuards,
   Post,
-  Param,
   Req,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
@@ -14,10 +13,14 @@ import { UserDto } from './dto/user.dto';
 import { IdFromJwt } from 'src/middleware/middleware.id';
 import { PetDto } from 'src/pets/dto/pet.dto';
 import { AuthGuard } from 'src/auth/auth.guard';
+import { AuthService } from 'src/auth/auth.service';
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly authService: AuthService,
+  ) {}
 
   @Post('/signup')
   async create(@Body() body: { user: UserDto; pet: PetDto }) {
@@ -33,11 +36,6 @@ export class UsersController {
   @Get('/')
   getProfile(@Req() req) {
     return req.user;
-  }
-
-  @Get('/:id')
-  async getById(@Param('id') id: string) {
-    return await this.usersService.getById(id);
   }
 
   @Patch('/')

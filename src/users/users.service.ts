@@ -1,7 +1,9 @@
 import {
   ConflictException,
+  Inject,
   Injectable,
   UnauthorizedException,
+  forwardRef,
 } from '@nestjs/common';
 import { Op } from 'sequelize';
 import * as bcrypt from 'bcrypt';
@@ -14,7 +16,9 @@ import { Pet } from 'src/pets/entity/pet.entity';
 
 @Injectable()
 export class UsersService {
-  constructor(private authService: AuthService) {}
+  constructor(
+    @Inject(forwardRef(() => AuthService)) private authService: AuthService,
+  ) {}
   async create(body: { user: UserDto; pet: PetDto }) {
     const duplicatedUser = await this.getByEmail(body.user);
     if (duplicatedUser) {
@@ -31,10 +35,9 @@ export class UsersService {
     return;
   }
 
-  async getById(id: string) {
-    return User.findByPk(id, {
-      attributes: ['email', 'provider'],
-    });
+  async createUser(user: UserDto) {
+    user.password = await this.hashPassword(user.status);
+    return await User.create(user);
   }
 
   async getByEmail(userDto: UserDto) {
@@ -42,6 +45,16 @@ export class UsersService {
       attributes: ['email', 'password', 'provider', 'status'],
       where: {
         email: userDto.email,
+      },
+    });
+  }
+
+  async getByEmailAndProvider(email: string, provider: string) {
+    return User.findOne({
+      attributes: ['email', 'provider', 'status'],
+      where: {
+        email: email,
+        provider: provider,
       },
     });
   }

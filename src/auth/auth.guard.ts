@@ -6,7 +6,12 @@ import {
 import { AuthGuard as NestAuthGuard } from '@nestjs/passport';
 
 @Injectable()
-export class AuthGuard extends NestAuthGuard('jwt') {
+export class AuthGuard extends NestAuthGuard([
+  'jwt',
+  'kakao',
+  'naver',
+  'google',
+]) {
   canActivate(context: ExecutionContext) {
     return super.canActivate(context);
   }
