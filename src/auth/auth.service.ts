@@ -40,6 +40,5 @@ export class AuthService {
       sameSite: 'strict',
     });
     res.redirect('http://localhost:3000');
-    return this.login(user);
   }
 }

@@ -13,14 +13,10 @@ import { UserDto } from './dto/user.dto';
 import { IdFromJwt } from 'src/middleware/middleware.id';
 import { PetDto } from 'src/pets/dto/pet.dto';
 import { AuthGuard } from 'src/auth/auth.guard';
-import { AuthService } from 'src/auth/auth.service';
 
 @Controller('users')
 export class UsersController {
-  constructor(
-    private readonly usersService: UsersService,
-    private readonly authService: AuthService,
-  ) {}
+  constructor(private readonly usersService: UsersService) {}
 
   @Post('/signup')
   async create(@Body() body: { user: UserDto; pet: PetDto }) {
