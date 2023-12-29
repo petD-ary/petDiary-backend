@@ -1,4 +1,5 @@
 import { IsNotEmpty, IsString } from 'class-validator';
+import { STATUS } from '../entity/user.entity';
 
 export class UserDto {
   @IsString()
@@ -19,5 +20,5 @@ export class UserDto {
   provider: string;
 
   @IsString()
-  status: string;
+  status: STATUS;
 }

@@ -10,7 +10,7 @@ import * as bcrypt from 'bcrypt';
 
 import { AuthService } from 'src/auth/auth.service';
 import { UserDto } from './dto/user.dto';
-import { User } from './entity/user.entity';
+import { STATUS, User } from './entity/user.entity';
 import { PetDto } from 'src/pets/dto/pet.dto';
 import { Pet } from 'src/pets/entity/pet.entity';
 
@@ -27,7 +27,7 @@ export class UsersService {
     if (!body.user.provider) {
       body.user.provider = 'petDiary';
     }
-    body.user.status = 'active';
+    body.user.status = STATUS.ACTIVE;
     body.user.password = await this.hashPassword(body.user.password);
     const user = await User.create(body.user);
     body.pet.userId = user.id;
@@ -103,7 +103,7 @@ export class UsersService {
 
   async addInfo(userDto: UserDto, info: { user: UserDto; pet: PetDto }) {
     const user = await this.getByEmailAndProvider(userDto);
-    const updateData = { nickname: info.user.nickname, status: 'active' };
+    const updateData = { nickname: info.user.nickname, status: STATUS.ACTIVE };
     await this.update(updateData, user);
 
     info.pet.userId = user.id;

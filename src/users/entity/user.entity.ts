@@ -32,8 +32,14 @@ export class User extends Model<User> {
     type: DataType.STRING,
     allowNull: false,
   })
-  status: string;
+  status: STATUS;
 
   @HasMany(() => Pet)
   pets: Pet[];
 }
+
+export const STATUS = {
+  ACTIVE: 'active',
+  TEMPORARY: 'temporary',
+};
+export type STATUS = (typeof STATUS)[keyof typeof STATUS];
