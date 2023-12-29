@@ -8,14 +8,17 @@ import {
   Param,
   Put,
 } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
+import { ApiTags } from '@nestjs/swagger';
+
 import { PetsService } from './pets.service';
 import { PetDto } from './dto/pet.dto';
-import { AuthGuard } from '@nestjs/passport';
 import { IdFromJwt } from 'src/middleware/middleware.id';
 import { catBreeds } from './data/breeds/cats';
 import { dogBreeds } from './data/breeds/dogs';
 
 @Controller('pets')
+@ApiTags('pets')
 export class PetsController {
   constructor(private readonly petsService: PetsService) {}
 

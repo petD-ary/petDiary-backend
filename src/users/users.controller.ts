@@ -9,6 +9,8 @@ import {
   Req,
   Param,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
+
 import { UsersService } from './users.service';
 import { UserDto } from './dto/user.dto';
 import { IdFromJwt } from 'src/middleware/middleware.id';
@@ -16,6 +18,7 @@ import { PetDto } from 'src/pets/dto/pet.dto';
 import { AuthGuard } from 'src/auth/auth.guard';
 
 @Controller('users')
+@ApiTags('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 

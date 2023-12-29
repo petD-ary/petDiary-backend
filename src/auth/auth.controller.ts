@@ -1,11 +1,11 @@
 import { Controller, Get, Req, Res, UseGuards } from '@nestjs/common';
 import { Request, Response } from 'express';
+import { AuthGuard } from '@nestjs/passport';
+import { ApiTags } from '@nestjs/swagger';
 
 import { AuthService } from './auth.service';
-import { AuthGuard } from '@nestjs/passport';
 
 interface IOAuthUser {
-  //interface 설정
   user: {
     provider: string;
     name: string;
@@ -15,6 +15,7 @@ interface IOAuthUser {
 }
 
 @Controller('auth')
+@ApiTags('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
