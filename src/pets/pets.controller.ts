@@ -12,8 +12,10 @@ import { PetsService } from './pets.service';
 import { PetDto } from './dto/pet.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { IdFromJwt } from 'src/middleware/middleware.id';
+import { catBreeds } from './data/breeds/cats';
+import { dogBreeds } from './data/breeds/dogs';
 
-@Controller('users')
+@Controller('pets')
 export class PetsController {
   constructor(private readonly petsService: PetsService) {}
 
@@ -37,5 +39,15 @@ export class PetsController {
   @Delete('/')
   async remove(@IdFromJwt() id: string) {
     return await this.petsService.delete(id);
+  }
+
+  @Get('/breeds/cats')
+  async getCatBreeds() {
+    return catBreeds;
+  }
+
+  @Get('/breeds/dogs')
+  async getDogBreeds() {
+    return dogBreeds;
   }
 }
