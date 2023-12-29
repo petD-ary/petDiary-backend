@@ -29,14 +29,20 @@ export class UsersController {
   }
 
   @UseGuards(AuthGuard)
+  @Post('/info')
+  async addInfo(@Req() req, @Body() body: { user: UserDto; pet: PetDto }) {
+    return await this.usersService.addInfo(req.user, body);
+  }
+
+  @UseGuards(AuthGuard)
   @Get('/')
-  getProfile(@Req() req) {
-    return req.user;
+  async getByEmailAndProvider(@Req() req) {
+    return await this.usersService.getByEmailAndProvider(req.user);
   }
 
   @Patch('/')
-  async update(@IdFromJwt() id: string, @Body() userDto: UserDto) {
-    return await this.usersService.update(id, userDto);
+  async update(@Body() userDto: UserDto) {
+    return await this.usersService.update(userDto, userDto);
   }
 
   @Delete('/')

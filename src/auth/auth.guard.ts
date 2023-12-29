@@ -23,7 +23,6 @@ export class AuthGuard extends NestAuthGuard('jwt') {
   }
 
   handleRequest(err, user) {
-    console.log(err);
     if (err || !user) {
       throw err || new UnauthorizedException();
     }

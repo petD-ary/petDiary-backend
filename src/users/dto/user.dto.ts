@@ -2,6 +2,9 @@ import { IsNotEmpty, IsString } from 'class-validator';
 
 export class UserDto {
   @IsString()
+  id?: string;
+
+  @IsString()
   nickname: string;
 
   @IsString()

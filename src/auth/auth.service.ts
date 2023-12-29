@@ -18,10 +18,7 @@ export class AuthService {
   }
 
   async OAuthLogin({ req, res }) {
-    let user = await this.usersService.getByEmailAndProvider(
-      req.user.email,
-      req.user.provider,
-    );
+    let user = await this.usersService.getByEmailAndProvider(req.user);
 
     // 회원가입이 안되어있다면? 자동회원가입
     if (!user) {

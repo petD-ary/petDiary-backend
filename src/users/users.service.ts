@@ -49,12 +49,12 @@ export class UsersService {
     });
   }
 
-  async getByEmailAndProvider(email: string, provider: string) {
+  async getByEmailAndProvider(userDto: UserDto) {
     return User.findOne({
-      attributes: ['email', 'provider', 'status'],
+      attributes: ['id', 'email', 'provider', 'nickname', 'status'],
       where: {
-        email: email,
-        provider: provider,
+        email: userDto.email,
+        provider: userDto.provider,
       },
     });
   }
@@ -76,17 +76,17 @@ export class UsersService {
     });
   }
 
-  async update(id: string, userDto: UserDto) {
+  async update(updateData: Partial<UserDto>, userDto: UserDto) {
     return User.update(
       {
-        ...userDto,
+        ...updateData,
       },
       {
         where: {
-          id: {
-            [Op.eq]: id,
-          },
+          email: userDto.email,
+          provider: userDto.provider,
         },
+        returning: true,
       },
     );
   }
@@ -99,6 +99,16 @@ export class UsersService {
         },
       },
     }).then(() => ({}));
+  }
+
+  async addInfo(userDto: UserDto, info: { user: UserDto; pet: PetDto }) {
+    const user = await this.getByEmailAndProvider(userDto);
+    const updateData = { nickname: info.user.nickname, status: 'active' };
+    await this.update(updateData, user);
+
+    info.pet.userId = user.id;
+    await Pet.create(info.pet);
+    return;
   }
 
   async login(value: UserDto) {

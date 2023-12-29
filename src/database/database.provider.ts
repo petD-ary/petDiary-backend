@@ -10,7 +10,12 @@ export const databaseProviders = [
         process.env.POSTGRES_DB,
         process.env.POSTGRES_USER,
         process.env.POSTGRES_PASSWORD,
-        { host: 'localhost', dialect: 'postgres', port: +process.env.DB_PORT },
+        {
+          host: 'localhost',
+          dialect: 'postgres',
+          port: +process.env.DB_PORT,
+          logging: console.log,
+        },
       );
       sequelize.addModels([User, Pet]);
       try {

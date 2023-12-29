@@ -19,20 +19,17 @@ export class Pet extends Model<Pet> {
 
   @Column({
     type: DataType.STRING,
-    unique: true,
   })
   petType: string;
 
   @Column({
     type: DataType.STRING,
-    unique: true,
     allowNull: false,
   })
   breed: string;
 
   @Column({
     type: DataType.STRING,
-    unique: true,
     allowNull: false,
   })
   name: string;
