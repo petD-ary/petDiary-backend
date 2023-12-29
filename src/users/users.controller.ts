@@ -7,6 +7,7 @@ import {
   UseGuards,
   Post,
   Req,
+  Param,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UserDto } from './dto/user.dto';
@@ -38,6 +39,18 @@ export class UsersController {
   @Get('/')
   async getByEmailAndProvider(@Req() req) {
     return await this.usersService.getByEmailAndProvider(req.user);
+  }
+
+  @Get('/nicknames/:nickname/exists')
+  async checkNicknameExists(@Param('nickname') nickname: string) {
+    const user = await this.usersService.getByNickname(nickname);
+
+    if (user) {
+      return {
+        message: '나도 사랑해❤',
+      };
+    }
+    return;
   }
 
   @Patch('/')

@@ -69,10 +69,18 @@ export class UsersService {
     });
   }
 
+  async getByNickname(nickname: string) {
+    return User.findOne({
+      attributes: ['email', 'password', 'provider', 'status'],
+      where: {
+        nickname: nickname,
+      },
+    });
+  }
+
   async getByAll() {
     return User.findAll({
       raw: true,
-      attributes: ['email', 'provider'],
     });
   }
 
