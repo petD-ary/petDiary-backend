@@ -19,6 +19,7 @@ export class Pet extends Model<Pet> {
 
   @Column({
     type: DataType.STRING,
+    allowNull: false,
   })
   petType: string;
 
@@ -36,6 +37,7 @@ export class Pet extends Model<Pet> {
 
   @Column({
     type: DataType.STRING,
+    allowNull: false,
   })
   gender: string;
 
@@ -46,7 +48,6 @@ export class Pet extends Model<Pet> {
 
   @Column({
     type: DataType.STRING,
-    allowNull: false,
   })
   birthday: string;
 

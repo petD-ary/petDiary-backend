@@ -5,48 +5,49 @@ import {
   UnauthorizedException,
   forwardRef,
 } from '@nestjs/common';
-import { Op } from 'sequelize';
 import * as bcrypt from 'bcrypt';
 
 import { AuthService } from 'src/auth/auth.service';
-import { UserDto } from './dto/user.dto';
-import { STATUS, User } from './entity/user.entity';
-import { PetDto } from 'src/pets/dto/pet.dto';
 import { Pet } from 'src/pets/entity/pet.entity';
+import { LoginUserDto, PROVIDER, UserDto, UserInfoDto } from './dto/user.dto';
+import { STATUS, User } from './entity/user.entity';
 
 @Injectable()
 export class UsersService {
   constructor(
     @Inject(forwardRef(() => AuthService)) private authService: AuthService,
   ) {}
-  async create(body: { user: UserDto; pet: PetDto }) {
-    const duplicatedUser = await this.getByEmail(body.user);
+
+  /*
+   * 소셜 로그인이 아닌 기존 회원 가입을 통한 유저 생성
+   */
+  async createNormalUser(userDto: LoginUserDto) {
+    userDto['status'] = STATUS.TEMPORARY;
+    userDto['provider'] = PROVIDER.PET_DIARY;
+    userDto.password = await this.hashPassword(userDto.password);
+    const duplicatedUser = await this.getByEmailAndProvider(userDto as UserDto);
     if (duplicatedUser) {
-      return new ConflictException('duplicate email');
+      throw new ConflictException('Duplicated user');
     }
-    if (!body.user.provider) {
-      body.user.provider = 'petDiary';
-    }
-    body.user.status = STATUS.ACTIVE;
-    body.user.password = await this.hashPassword(body.user.password);
-    const user = await User.create(body.user);
-    body.pet.userId = user.id;
-    await Pet.create(body.pet);
+    await User.create(userDto);
     return;
   }
 
-  async createUser(user: UserDto) {
-    user.password = await this.hashPassword(user.status);
-    return await User.create(user);
+  /*
+   * 소셜 로그인이 아닌 기존 로그인
+   */
+  async normalLogin(userDto: LoginUserDto) {
+    userDto['provider'] = PROVIDER.PET_DIARY;
+    const user = await this.getByEmail(userDto as UserDto);
+    if (user && (await bcrypt.compare(userDto.password, user.password))) {
+      return this.authService.login(user);
+    }
+
+    throw new UnauthorizedException('Not founded user');
   }
 
-  async getByEmail(userDto: UserDto) {
-    return User.findOne({
-      attributes: ['email', 'password', 'provider', 'status'],
-      where: {
-        email: userDto.email,
-      },
-    });
+  async createUser(user: UserDto) {
+    return await User.create(user);
   }
 
   async getByEmailAndProvider(userDto: UserDto) {
@@ -71,9 +72,19 @@ export class UsersService {
 
   async getByNickname(nickname: string) {
     return User.findOne({
-      attributes: ['email', 'password', 'provider', 'status'],
+      attributes: ['email', 'provider', 'status'],
       where: {
         nickname: nickname,
+      },
+    });
+  }
+
+  async getByEmail(userDto: UserDto) {
+    return User.findOne({
+      attributes: ['email', 'password', 'provider', 'status'],
+      where: {
+        email: userDto.email,
+        provider: userDto.provider,
       },
     });
   }
@@ -99,17 +110,7 @@ export class UsersService {
     );
   }
 
-  async delete(id: string) {
-    return User.destroy({
-      where: {
-        id: {
-          [Op.eq]: id,
-        },
-      },
-    }).then(() => ({}));
-  }
-
-  async addInfo(userDto: UserDto, info: { user: UserDto; pet: PetDto }) {
+  async addInfo(userDto: UserDto, info: UserInfoDto) {
     const user = await this.getByEmailAndProvider(userDto);
     const updateData = { nickname: info.user.nickname, status: STATUS.ACTIVE };
     await this.update(updateData, user);
@@ -117,15 +118,6 @@ export class UsersService {
     info.pet.userId = user.id;
     await Pet.create(info.pet);
     return;
-  }
-
-  async login(value: UserDto) {
-    const user = await this.getByEmail(value);
-    if (user && (await bcrypt.compare(value.password, user.password))) {
-      return this.authService.login(user);
-    }
-
-    throw new UnauthorizedException('not user');
   }
 
   async hashPassword(password: string) {

@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { IsBoolean, IsNotEmpty, IsString } from 'class-validator';
 
 export class PetDto {
@@ -6,29 +7,36 @@ export class PetDto {
 
   @IsString()
   @IsNotEmpty()
+  @ApiProperty({ description: 'petType' })
   petType: string;
 
   @IsString()
   @IsNotEmpty()
+  @ApiProperty({ description: 'breed' })
   breed: string;
 
   @IsString()
   @IsNotEmpty()
+  @ApiProperty({ description: 'name' })
   name: string;
 
   @IsString()
+  @ApiProperty({ description: 'gender' })
   gender: string;
 
   @IsBoolean()
+  @ApiProperty({ description: 'neutered' })
   neutered: boolean;
 
-  @IsBoolean()
-  @IsNotEmpty()
+  @IsString()
+  @ApiProperty({ description: 'birthday' })
   birthday: string;
 
-  @IsBoolean()
+  @IsString()
+  @ApiProperty({ description: 'adoptionDate' })
   adoptionDate: string;
 
-  @IsBoolean()
+  @IsString()
+  @ApiProperty({ description: 'weight' })
   weight: string;
 }

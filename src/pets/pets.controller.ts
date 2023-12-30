@@ -1,19 +1,7 @@
-import {
-  Controller,
-  Get,
-  Body,
-  Delete,
-  UseGuards,
-  Post,
-  Param,
-  Put,
-} from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
-import { ApiTags } from '@nestjs/swagger';
+import { Controller, Get } from '@nestjs/common';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
 import { PetsService } from './pets.service';
-import { PetDto } from './dto/pet.dto';
-import { IdFromJwt } from 'src/middleware/middleware.id';
 import { catBreeds } from './data/breeds/cats';
 import { dogBreeds } from './data/breeds/dogs';
 
@@ -22,33 +10,17 @@ import { dogBreeds } from './data/breeds/dogs';
 export class PetsController {
   constructor(private readonly petsService: PetsService) {}
 
-  @Post('/')
-  async create(@Body() petDto: PetDto) {
-    return await this.petsService.create(petDto);
-  }
-
-  @Get('/')
-  async getById(@Param('id') id: string) {
-    return await this.petsService.getById(id);
-  }
-
-  @UseGuards(AuthGuard('jwt'))
-  @Put('/')
-  async update(@IdFromJwt() id: string, @Body() petDto: PetDto) {
-    return await this.petsService.update(id, petDto);
-  }
-
-  @UseGuards(AuthGuard('jwt'))
-  @Delete('/')
-  async remove(@IdFromJwt() id: string) {
-    return await this.petsService.delete(id);
-  }
-
+  @ApiOperation({
+    summary: '고양이 품종',
+  })
   @Get('/breeds/cats')
   async getCatBreeds() {
     return catBreeds;
   }
 
+  @ApiOperation({
+    summary: '개 품종',
+  })
   @Get('/breeds/dogs')
   async getDogBreeds() {
     return dogBreeds;
