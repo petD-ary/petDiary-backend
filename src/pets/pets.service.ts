@@ -1,19 +1,21 @@
 import { Injectable } from '@nestjs/common';
 import { Op } from 'sequelize';
 
-import { PetDto } from './dto/pet.dto';
+import { PetDto, PetDtoWithoutId } from './dto/pet.dto';
 import { Pet } from './entity/pet.entity';
 
 @Injectable()
 export class PetsService {
-  async create(value: PetDto) {
+  async create(value: PetDtoWithoutId) {
     await Pet.create(value);
     return;
   }
 
-  async getById(id: string) {
-    return Pet.findByPk(id, {
-      attributes: ['email', 'provider'],
+  async getByUserId(userId: string) {
+    return Pet.findAll({
+      where: {
+        userId: userId,
+      },
     });
   }
 

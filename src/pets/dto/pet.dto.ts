@@ -1,9 +1,13 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, OmitType } from '@nestjs/swagger';
 import { IsBoolean, IsNotEmpty, IsString } from 'class-validator';
 
 export class PetDto {
   @IsString()
   userId: number;
+
+  @IsString()
+  @ApiProperty({ description: 'id' })
+  id: string;
 
   @IsString()
   @IsNotEmpty()
@@ -40,3 +44,5 @@ export class PetDto {
   @ApiProperty({ description: 'weight' })
   weight: string;
 }
+
+export class PetDtoWithoutId extends OmitType(PetDto, ['id'] as const) {}
