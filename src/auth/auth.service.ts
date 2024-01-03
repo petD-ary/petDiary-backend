@@ -41,8 +41,8 @@ export class AuthService {
     });
 
     if (user.status === STATUS.TEMPORARY) {
-      res.redirect('http://localhost:3000/account');
+      return res.redirect('http://localhost:3000/account');
     }
-    res.redirect('http://localhost:3000');
+    return res.redirect('http://localhost:3000');
   }
 }
