@@ -11,8 +11,8 @@ export const databaseProviders = [
         process.env.POSTGRES_USER,
         process.env.POSTGRES_PASSWORD,
         {
-          host: 'localhost',
           dialect: 'postgres',
+          host: process.env.DB_HOST,
           port: +process.env.DB_PORT,
         },
       );
