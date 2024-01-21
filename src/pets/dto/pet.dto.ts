@@ -43,6 +43,10 @@ export class PetDto {
   @IsString()
   @ApiProperty({ description: 'weight' })
   weight: string;
+
+  @IsString()
+  @ApiProperty({ description: 'imageUrl' })
+  imageUrl: string;
 }
 
 export class PetDtoWithoutId extends OmitType(PetDto, ['id'] as const) {}

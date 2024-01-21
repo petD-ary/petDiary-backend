@@ -60,4 +60,9 @@ export class Pet extends Model<Pet> {
     type: DataType.STRING,
   })
   weight: string;
+
+  @Column({
+    type: DataType.STRING,
+  })
+  imageUrl: string;
 }
