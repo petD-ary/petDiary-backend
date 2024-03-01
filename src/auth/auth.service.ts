@@ -37,7 +37,8 @@ export class AuthService {
     // 쿠키에 토큰 등록
     res.cookie('accessToken', accessToken, {
       httpOnly: true,
-      sameSite: 'strict',
+      sameSite: 'none',
+      secure: true,
     });
 
     if (user.status === STATUS.TEMPORARY) {
