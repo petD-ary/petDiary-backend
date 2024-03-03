@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import * as dotenv from 'dotenv';
 import * as cookieParser from 'cookie-parser';
+import * as bodyParser from 'body-parser';
 import { INestApplication } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
@@ -11,6 +12,8 @@ async function bootstrap() {
 
   const app = await NestFactory.create(AppModule);
   app.use(cookieParser());
+  app.use(bodyParser.json({ limit: '10mb' }));
+  app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
   app.setGlobalPrefix('api');
   app.enableCors({
     origin: 'http://localhost:3000',

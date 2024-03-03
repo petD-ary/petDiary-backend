@@ -17,7 +17,7 @@ export class UploadsService {
   }
 
   async uploadImage(file: any): Promise<string> {
-    const key = `/images/${Date.now()}${file.originalname}`;
+    const key = `images/${Date.now()}${file.originalname}`;
     const params: AWS.S3.PutObjectRequest = {
       Bucket: process.env.AWS_BUCKET_NAME,
       ACL: 'private',
