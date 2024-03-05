@@ -30,16 +30,16 @@ export class Calendar extends Model<Calendar> {
   address: string;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.DOUBLE,
     allowNull: false,
   })
-  lat: string;
+  lat: number;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.DOUBLE,
     allowNull: false,
   })
-  lng: string;
+  lng: number;
 
   @Column({
     type: DataType.STRING,

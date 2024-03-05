@@ -1,6 +1,7 @@
 import { Sequelize } from 'sequelize-typescript';
 import { User } from 'src/users/entity/user.entity';
 import { Pet } from 'src/pets/entity/pet.entity';
+import { Calendar } from 'src/calendars/entity/calendar.entity';
 
 export const databaseProviders = [
   {
@@ -16,7 +17,7 @@ export const databaseProviders = [
           port: +process.env.DB_PORT,
         },
       );
-      sequelize.addModels([User, Pet]);
+      sequelize.addModels([User, Pet, Calendar]);
       try {
         await sequelize.authenticate();
         await sequelize.sync();
