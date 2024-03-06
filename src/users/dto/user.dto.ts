@@ -3,22 +3,29 @@ import { STATUS } from '../entity/user.entity';
 import { ApiProperty, PickType } from '@nestjs/swagger';
 import { PetDto } from 'src/pets/dto/pet.dto';
 
+const USER_DTO_EXAMPLE = {
+  ID: '1',
+  NICKNAME: '네로집사',
+  EMAIL: 'example@mail.com',
+  PASSWORD: 'password123!',
+};
+
 export class UserDto {
   @IsString()
   id?: string;
 
   @IsString()
-  @ApiProperty({ description: 'nickname' })
+  @ApiProperty({ description: 'nickname', example: USER_DTO_EXAMPLE.NICKNAME })
   nickname: string;
 
   @IsString()
   @IsNotEmpty()
-  @ApiProperty({ description: 'email' })
+  @ApiProperty({ description: 'email', example: USER_DTO_EXAMPLE.EMAIL })
   email: string;
 
   @IsString()
   @IsNotEmpty()
-  @ApiProperty({ description: 'password' })
+  @ApiProperty({ description: 'password', example: USER_DTO_EXAMPLE.PASSWORD })
   password: string;
 
   @IsString()
