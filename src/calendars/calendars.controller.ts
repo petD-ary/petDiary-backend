@@ -12,7 +12,11 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
 import { AuthGuard } from 'src/auth/auth.guard';
 import { CalendarsService } from './calendars.service';
-import { CalendarDto, CalendarDtoWithoutId } from './dto/calendar.dto';
+import {
+  CalendarDto,
+  CalendarDtoOnlyId,
+  CalendarDtoWithoutId,
+} from './dto/calendar.dto';
 
 @Controller('calendars')
 @ApiTags('calendars')
@@ -44,7 +48,14 @@ export class CalendarsController {
   @UseGuards(AuthGuard)
   @Put('/')
   async put(@Req() req, @Body() calendar: CalendarDto) {
-    return await this.calendarsService.update(calendar.id, calendar);
+    const options = {
+      where: {
+        id: calendar.id,
+        userId: req.user.id,
+      },
+    };
+
+    return await this.calendarsService.update(calendar, options);
   }
 
   @ApiOperation({
@@ -52,7 +63,14 @@ export class CalendarsController {
   })
   @UseGuards(AuthGuard)
   @Delete('/')
-  async delete(@Req() req, @Body() calendar: CalendarDto) {
-    return await this.calendarsService.delete(calendar.id);
+  async delete(@Req() req, @Body() calendar: CalendarDtoOnlyId) {
+    const options = {
+      where: {
+        id: calendar.id,
+        userId: req.user.id,
+      },
+    };
+
+    return await this.calendarsService.delete(options);
   }
 }

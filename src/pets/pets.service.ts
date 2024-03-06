@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Op } from 'sequelize';
+import { DestroyOptions, UpdateOptions } from 'sequelize';
 
 import { PetDto, PetDtoWithoutId } from './dto/pet.dto';
 import { Pet } from './entity/pet.entity';
@@ -26,28 +26,11 @@ export class PetsService {
     });
   }
 
-  async update(id: string, petDto: PetDto) {
-    return Pet.update(
-      {
-        ...petDto,
-      },
-      {
-        where: {
-          id: {
-            [Op.eq]: id,
-          },
-        },
-      },
-    );
+  async update(petDto: PetDto, options: UpdateOptions) {
+    return Pet.update(petDto, options);
   }
 
-  async delete(id: string) {
-    return Pet.destroy({
-      where: {
-        id: {
-          [Op.eq]: id,
-        },
-      },
-    }).then(() => ({}));
+  async delete(options: DestroyOptions) {
+    return Pet.destroy(options);
   }
 }

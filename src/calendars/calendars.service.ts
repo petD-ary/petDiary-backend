@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Op } from 'sequelize';
+import { DestroyOptions, UpdateOptions } from 'sequelize';
 
 import { CalendarDto, CalendarDtoWithoutId } from './dto/calendar.dto';
 import { Calendar } from './entity/calendar.entity';
@@ -26,28 +26,11 @@ export class CalendarsService {
     });
   }
 
-  async update(id: string, calendarDto: CalendarDto) {
-    return Calendar.update(
-      {
-        ...calendarDto,
-      },
-      {
-        where: {
-          id: {
-            [Op.eq]: id,
-          },
-        },
-      },
-    );
+  async update(calendarDto: CalendarDto, options: UpdateOptions) {
+    return Calendar.update(calendarDto, options);
   }
 
-  async delete(id: string) {
-    return Calendar.destroy({
-      where: {
-        id: {
-          [Op.eq]: id,
-        },
-      },
-    }).then(() => ({}));
+  async delete(options: DestroyOptions) {
+    return Calendar.destroy(options);
   }
 }

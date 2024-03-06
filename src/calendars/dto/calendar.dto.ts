@@ -1,9 +1,9 @@
-import { ApiProperty, OmitType } from '@nestjs/swagger';
+import { ApiProperty, OmitType, PickType } from '@nestjs/swagger';
 import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
 const CALENDAR_DTO_EXAMPLE = {
   ID: '1',
-  TITLE: '콩이 병원가기',
+  TITLE: '네로 병원가기',
   ADDRESS: '히히 동물병원',
   LAT: 37.5222644,
   LNG: 127.0461,
@@ -72,3 +72,5 @@ export class CalendarDto {
 export class CalendarDtoWithoutId extends OmitType(CalendarDto, [
   'id',
 ] as const) {}
+
+export class CalendarDtoOnlyId extends PickType(CalendarDto, ['id'] as const) {}

@@ -17,7 +17,7 @@ import { AuthGuard } from 'src/auth/auth.guard';
 import { PetsService } from './pets.service';
 import { catBreeds } from './data/breeds/cats';
 import { dogBreeds } from './data/breeds/dogs';
-import { PetDto, PetDtoWithoutId } from './dto/pet.dto';
+import { PetDto, PetDtoOnlyId, PetDtoWithoutId } from './dto/pet.dto';
 import { UploadsService } from 'src/uploads/uploads.service';
 
 @Controller('pets')
@@ -67,7 +67,14 @@ export class PetsController {
       pet['imageUrl'] = imageUrl;
     }
 
-    return await this.petsService.update(pet.id, pet);
+    const options = {
+      where: {
+        id: pet.id,
+        userId: req.user.id,
+      },
+    };
+
+    return await this.petsService.update(pet, options);
   }
 
   @ApiOperation({
@@ -75,8 +82,15 @@ export class PetsController {
   })
   @UseGuards(AuthGuard)
   @Delete('/')
-  async delete(@Req() req, @Body() pet: PetDto) {
-    return await this.petsService.delete(pet.id);
+  async delete(@Req() req, @Body() pet: PetDtoOnlyId) {
+    const options = {
+      where: {
+        id: pet.id,
+        userId: req.user.id,
+      },
+    };
+
+    return await this.petsService.delete(options);
   }
 
   @ApiOperation({

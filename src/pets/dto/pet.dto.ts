@@ -1,4 +1,4 @@
-import { ApiProperty, OmitType } from '@nestjs/swagger';
+import { ApiProperty, OmitType, PickType } from '@nestjs/swagger';
 import { IsBoolean, IsNotEmpty, IsString } from 'class-validator';
 
 const PET_DTO_EXAMPLE = {
@@ -67,3 +67,5 @@ export class PetDto {
 }
 
 export class PetDtoWithoutId extends OmitType(PetDto, ['id'] as const) {}
+
+export class PetDtoOnlyId extends PickType(PetDto, ['id'] as const) {}
