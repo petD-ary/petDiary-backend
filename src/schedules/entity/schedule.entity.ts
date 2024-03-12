@@ -9,7 +9,7 @@ import {
 import { User } from 'src/users/entity/user.entity';
 
 @Table
-export class Calendar extends Model<Calendar> {
+export class Schedule extends Model<Schedule> {
   @ForeignKey(() => User)
   @Column
   userId: number;
@@ -55,13 +55,19 @@ export class Calendar extends Model<Calendar> {
 
   @Column({
     type: DataType.STRING,
+    allowNull: false,
+  })
+  repeatId: string;
+
+  @Column({
+    type: DataType.STRING,
   })
   startTime: string;
 
   @Column({
     type: DataType.STRING,
   })
-  finishTime: string;
+  endTime: string;
 
   @Column({
     type: DataType.STRING,

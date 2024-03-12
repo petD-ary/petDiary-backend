@@ -6,7 +6,7 @@ import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './auth/auth.module';
 import { PetsModule } from './pets/pets.module';
 import { UploadModule } from './uploads/uploads.module';
-import { CalendarsModule } from './calendars/calendars.module';
+import { SchedulesModule } from './schedules/schedules.module';
 
 @Module({
   imports: [
@@ -15,7 +15,7 @@ import { CalendarsModule } from './calendars/calendars.module';
     PetsModule,
     AuthModule,
     UploadModule,
-    CalendarsModule,
+    SchedulesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
