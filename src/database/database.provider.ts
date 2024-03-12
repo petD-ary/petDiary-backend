@@ -2,6 +2,7 @@ import { Sequelize } from 'sequelize-typescript';
 import { User } from 'src/users/entity/user.entity';
 import { Pet } from 'src/pets/entity/pet.entity';
 import { Schedule } from 'src/schedules/entity/schedule.entity';
+import { Repeat } from 'src/schedules/entity/repeat.entity';
 
 export const databaseProviders = [
   {
@@ -17,7 +18,7 @@ export const databaseProviders = [
           port: +process.env.DB_PORT,
         },
       );
-      sequelize.addModels([User, Pet, Schedule]);
+      sequelize.addModels([User, Pet, Schedule, Repeat]);
       try {
         await sequelize.authenticate();
         await sequelize.sync();

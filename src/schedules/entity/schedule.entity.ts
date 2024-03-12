@@ -7,6 +7,7 @@ import {
   BelongsTo,
 } from 'sequelize-typescript';
 import { User } from 'src/users/entity/user.entity';
+import { Repeat } from './repeat.entity';
 
 @Table
 export class Schedule extends Model<Schedule> {
@@ -16,6 +17,10 @@ export class Schedule extends Model<Schedule> {
 
   @BelongsTo(() => User)
   user: User;
+
+  @ForeignKey(() => Repeat)
+  @Column
+  repeatId: number;
 
   @Column({
     type: DataType.STRING,
@@ -46,18 +51,6 @@ export class Schedule extends Model<Schedule> {
     allowNull: false,
   })
   alarm: string;
-
-  @Column({
-    type: DataType.STRING,
-    allowNull: false,
-  })
-  repeat: string;
-
-  @Column({
-    type: DataType.STRING,
-    allowNull: false,
-  })
-  repeatId: string;
 
   @Column({
     type: DataType.STRING,

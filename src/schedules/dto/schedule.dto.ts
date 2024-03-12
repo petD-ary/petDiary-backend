@@ -16,12 +16,15 @@ const SCHEDULE_DTO_EXAMPLE = {
 };
 
 export class ScheduleDto {
-  @IsString()
+  @IsNumber()
   userId: number;
 
   @IsString()
   @ApiProperty({ description: 'id', example: SCHEDULE_DTO_EXAMPLE.ID })
   id: string;
+
+  @IsNumber()
+  repeatId: number;
 
   @IsString()
   @IsNotEmpty()
@@ -76,16 +79,6 @@ export class ScheduleDto {
   @ApiProperty({ description: 'memo', example: SCHEDULE_DTO_EXAMPLE.MEMO })
   memo: string;
 }
-
-export const REPEAT = {
-  NONE: 'none',
-  DAILY: 'daily',
-  WEEKLY: 'weekly',
-  BIWEEKLY: 'biweekly',
-  MONTHLY: 'monthly',
-  YEARLY: 'yearly',
-};
-export type REPEAT = (typeof REPEAT)[keyof typeof REPEAT];
 
 export class ScheduleDtoWithoutId extends OmitType(ScheduleDto, [
   'id',
