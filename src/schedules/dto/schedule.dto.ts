@@ -1,4 +1,5 @@
 import { ApiProperty, OmitType, PickType } from '@nestjs/swagger';
+import { Expose, Transform } from 'class-transformer';
 import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
 const SCHEDULE_DTO_EXAMPLE = {
@@ -16,21 +17,26 @@ const SCHEDULE_DTO_EXAMPLE = {
 };
 
 export class ScheduleDto {
+  @Expose()
   @IsNumber()
   userId: number;
 
+  @Expose()
   @IsString()
   @ApiProperty({ description: 'id', example: SCHEDULE_DTO_EXAMPLE.ID })
   id: string;
 
+  @Expose()
   @IsNumber()
   repeatId: number;
 
+  @Expose()
   @IsString()
   @IsNotEmpty()
   @ApiProperty({ description: 'title', example: SCHEDULE_DTO_EXAMPLE.TITLE })
   title: string;
 
+  @Expose()
   @IsString()
   @ApiProperty({
     description: 'address',
@@ -38,22 +44,29 @@ export class ScheduleDto {
   })
   address: string;
 
+  @Expose()
   @IsNumber()
   @ApiProperty({ description: 'lat', example: SCHEDULE_DTO_EXAMPLE.LAT })
   lat: number;
 
+  @Expose()
   @IsNumber()
   @ApiProperty({ description: 'lng', example: SCHEDULE_DTO_EXAMPLE.LNG })
   lng: number;
 
+  @Expose()
   @IsString()
   @ApiProperty({ description: 'alarm', example: SCHEDULE_DTO_EXAMPLE.ALARM })
   alarm: string;
 
+  @Expose()
+  @Transform(({ obj }) => obj.repeatInfo?.repeat)
   @IsString()
   @ApiProperty({ description: 'repeat', example: SCHEDULE_DTO_EXAMPLE.REPEAT })
   repeat: string;
 
+  @Expose()
+  @Transform(({ obj }) => obj.repeatInfo?.repeatCount)
   @IsNumber()
   @ApiProperty({
     description: 'repeatCount',
@@ -61,6 +74,7 @@ export class ScheduleDto {
   })
   repeatCount: number;
 
+  @Expose()
   @IsString()
   @ApiProperty({
     description: 'startTime',
@@ -68,6 +82,7 @@ export class ScheduleDto {
   })
   startTime: string;
 
+  @Expose()
   @IsString()
   @ApiProperty({
     description: 'endTime',
@@ -75,6 +90,7 @@ export class ScheduleDto {
   })
   endTime: string;
 
+  @Expose()
   @IsString()
   @ApiProperty({ description: 'memo', example: SCHEDULE_DTO_EXAMPLE.MEMO })
   memo: string;

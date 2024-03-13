@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { DestroyOptions, UpdateOptions } from 'sequelize';
+import { plainToInstance } from 'class-transformer';
 
 import { ScheduleDto, ScheduleDtoWithoutId } from './dto/schedule.dto';
 import { Schedule } from './entity/schedule.entity';
@@ -50,17 +51,22 @@ export class SchedulesService {
   }
 
   async getByUserId(userId: string) {
-    return Schedule.findAll({
+    const scheduleEntity = await Schedule.scope('findAll').findAll({
       where: {
         userId: userId,
       },
     });
+    // excludeExtraneousValues: true 추가하고, ScheduleDto 에서 @Expose() 데코레이터 추가하여
+    // 명시된 필드만 객체를 직렬화하여 순환 참조 발생을 피한다.
+    const scheduleDto = plainToInstance(ScheduleDto, scheduleEntity, {
+      excludeExtraneousValues: true,
+    });
+    return scheduleDto;
   }
 
   async getByAll() {
     return Schedule.findAll({
       raw: true,
-      attributes: ['email', 'provider'],
     });
   }
 

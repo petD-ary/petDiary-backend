@@ -5,11 +5,20 @@ import {
   DataType,
   ForeignKey,
   BelongsTo,
+  Scopes,
 } from 'sequelize-typescript';
 import { User } from 'src/users/entity/user.entity';
 import { Repeat } from './repeat.entity';
 
 @Table
+@Scopes(() => ({
+  findAll: {
+    include: [Repeat],
+  },
+  find: {
+    include: [Repeat],
+  },
+}))
 export class Schedule extends Model<Schedule> {
   @ForeignKey(() => User)
   @Column
@@ -21,6 +30,9 @@ export class Schedule extends Model<Schedule> {
   @ForeignKey(() => Repeat)
   @Column
   repeatId: number;
+
+  @BelongsTo(() => Repeat)
+  repeatInfo: Repeat;
 
   @Column({
     type: DataType.STRING,
