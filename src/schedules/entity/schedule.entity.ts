@@ -65,14 +65,16 @@ export class Schedule extends Model<Schedule> {
   alarm: string;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.DATE,
+    allowNull: false,
   })
-  startTime: string;
+  startTime: Date;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.DATE,
+    allowNull: false,
   })
-  endTime: string;
+  endTime: Date;
 
   @Column({
     type: DataType.STRING,

@@ -1,53 +1,94 @@
 import { Injectable } from '@nestjs/common';
-import { DestroyOptions, UpdateOptions } from 'sequelize';
+import { DestroyOptions, Optional, UpdateOptions } from 'sequelize';
 import { plainToInstance } from 'class-transformer';
 
 import { ScheduleDto, ScheduleDtoWithoutId } from './dto/schedule.dto';
 import { Schedule } from './entity/schedule.entity';
 import { REPEAT, RepeatDtoWithoutId } from './dto/repeat.dto';
 import { Repeat } from './entity/repeat.entity';
+import { NullishPropertiesOf } from 'sequelize/types/utils';
 
 @Injectable()
 export class SchedulesService {
-  async create(value: ScheduleDtoWithoutId) {
-    await Schedule.create(value);
-    return;
-  }
-
-  async createRepeat(value: RepeatDtoWithoutId) {
-    return await Repeat.create(value);
-  }
-
-  async createRepeatSchedule(value: ScheduleDtoWithoutId) {
-    const { repeat, repeatCount = 1 } = value;
-    delete value.repeat;
-    delete value.repeatCount;
+  /**
+   * 사용자가 정의한 반복 규칙(repeat, repeatCount)에 따라 일정 생성
+   * - `repeat`와 `repeatCount`는 반복 규칙을 정의
+   *    - `repeat`: 일정의 반복 유형을 정의 (반복 안함, 매일, 매주, 격주, 매월, 매년).
+   *    - `repeatCount`: 일정이 반복되어야 하는 횟수를 정의.
+   * - 반복 규칙은 별도의 `repeat` 테이블에 저장되며, 각 반복 일정은 생성 시 부여받은 `repeatId`로 연결
+   * - `startTime`과 `endTime`은 Date 타입으로 변환하여 데이터베이스에 저장
+   *    - 이는 일정을 기간으로 검색할 때 조회를 용이하게 하기 위함.
+   */
+  async createSchedule(value: ScheduleDtoWithoutId) {
+    const {
+      repeat,
+      repeatCount = 1,
+      startTime,
+      endTime,
+      ...scheduleDetails
+    } = value;
+    const startDateTime = new Date(startTime);
+    const endDateTime = new Date(endTime);
 
     if (repeat === REPEAT.NONE) {
-      await Schedule.create(value);
+      await this.createSingleSchedule({
+        ...scheduleDetails,
+        startTime: startDateTime,
+        endTime: endDateTime,
+      });
     } else {
       const repeatId = (await this.createRepeat({ repeat, repeatCount })).id;
-      const baseStartTime = new Date(value.startTime);
-      const baseEndTime = new Date(value.endTime);
-
-      for (let i = 0; i < repeatCount; i++) {
-        const startTime = this.adjustDate(
-          baseStartTime,
-          repeat,
-          i,
-        ).toISOString();
-        const endTime = this.adjustDate(baseEndTime, repeat, i).toISOString();
-
-        await Schedule.create({
-          ...value,
-          repeatId,
-          startTime,
-          endTime,
-        });
-      }
+      await this.createRepeatedSchedules(
+        startDateTime,
+        endDateTime,
+        repeat,
+        repeatCount,
+        repeatId,
+        scheduleDetails,
+      );
     }
 
     return;
+  }
+
+  /**
+   * 일정 생성
+   */
+  async createSingleSchedule(
+    schedule: Optional<Schedule, NullishPropertiesOf<Schedule>>,
+  ) {
+    await Schedule.create(schedule);
+  }
+
+  /**
+   * `repeatCount` 만큼 반복 일정 생성
+   */
+  async createRepeatedSchedules(
+    baseStartTime: Date,
+    baseEndTime: Date,
+    repeat: string,
+    repeatCount: number,
+    repeatId: number,
+    scheduleDetails: Optional<Schedule, NullishPropertiesOf<Schedule>>,
+  ) {
+    for (let i = 0; i < repeatCount; i++) {
+      const startTime = this.adjustDate(baseStartTime, repeat, i);
+      const endTime = this.adjustDate(baseEndTime, repeat, i);
+
+      await Schedule.create({
+        ...scheduleDetails,
+        repeatId,
+        startTime,
+        endTime,
+      });
+    }
+  }
+
+  /**
+   * `repeat`, `repeatCount` 저장
+   */
+  async createRepeat(value: RepeatDtoWithoutId) {
+    return await Repeat.create(value);
   }
 
   async getByUserId(userId: string) {
@@ -70,14 +111,19 @@ export class SchedulesService {
     });
   }
 
+  // TODO 업데이트 수정
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async update(scheduleDto: ScheduleDto, options: UpdateOptions) {
-    return Schedule.update(scheduleDto, options);
+    // return Schedule.update(scheduleDto, options);
   }
 
   async delete(options: DestroyOptions) {
     return Schedule.destroy(options);
   }
 
+  /**
+   * `repeat` 에 따라 일정 시간 계산
+   */
   adjustDate(date: Date, repeat: REPEAT, count: number) {
     const newDate = new Date(date);
     switch (repeat) {

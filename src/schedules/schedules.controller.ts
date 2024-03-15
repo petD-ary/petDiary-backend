@@ -30,7 +30,7 @@ export class SchedulesController {
   @Post('/')
   async create(@Req() req, @Body() schedule: ScheduleDtoWithoutId) {
     schedule['userId'] = req.user.id;
-    return await this.schedulesService.createRepeatSchedule(schedule);
+    return await this.schedulesService.createSchedule(schedule);
   }
 
   @ApiOperation({
