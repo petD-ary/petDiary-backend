@@ -62,7 +62,10 @@ export class ScheduleDto {
   @Expose()
   @Transform(({ obj }) => obj.repeatInfo?.repeat)
   @IsString()
-  @ApiProperty({ description: 'repeat', example: SCHEDULE_DTO_EXAMPLE.REPEAT })
+  @ApiProperty({
+    description: 'repeat(none, daily, weekly, biweekly, monthly, yearly)',
+    example: SCHEDULE_DTO_EXAMPLE.REPEAT,
+  })
   repeat: string;
 
   @Expose()

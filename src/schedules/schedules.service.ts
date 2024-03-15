@@ -1,5 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { DestroyOptions, Optional, UpdateOptions } from 'sequelize';
+import {
+  DestroyOptions,
+  FindOptions,
+  Op,
+  Optional,
+  UpdateOptions,
+} from 'sequelize';
 import { plainToInstance } from 'class-transformer';
 
 import { ScheduleDto, ScheduleDtoWithoutId } from './dto/schedule.dto';
@@ -7,6 +13,10 @@ import { Schedule } from './entity/schedule.entity';
 import { REPEAT, RepeatDtoWithoutId } from './dto/repeat.dto';
 import { Repeat } from './entity/repeat.entity';
 import { NullishPropertiesOf } from 'sequelize/types/utils';
+
+interface ScheduleOptions extends FindOptions {
+  userId?: string;
+}
 
 @Injectable()
 export class SchedulesService {
@@ -97,6 +107,7 @@ export class SchedulesService {
         userId: userId,
       },
     });
+
     // excludeExtraneousValues: true 추가하고, ScheduleDto 에서 @Expose() 데코레이터 추가하여
     // 명시된 필드만 객체를 직렬화하여 순환 참조 발생을 피한다.
     const scheduleDto = plainToInstance(ScheduleDto, scheduleEntity, {
@@ -105,10 +116,15 @@ export class SchedulesService {
     return scheduleDto;
   }
 
-  async getByAll() {
-    return Schedule.findAll({
-      raw: true,
+  async getByAll(options: FindOptions) {
+    const scheduleEntity = await Schedule.scope('findAll').findAll(options);
+
+    // excludeExtraneousValues: true 추가하고, ScheduleDto 에서 @Expose() 데코레이터 추가하여
+    // 명시된 필드만 객체를 직렬화하여 순환 참조 발생을 피한다.
+    const scheduleDto = plainToInstance(ScheduleDto, scheduleEntity, {
+      excludeExtraneousValues: true,
     });
+    return scheduleDto;
   }
 
   // TODO 업데이트 수정
@@ -146,5 +162,58 @@ export class SchedulesService {
         throw new Error('Invalid repeat type');
     }
     return newDate;
+  }
+
+  /**
+   * 사용자 ID를 포함하는 기본 옵션 객체를 생성
+   *
+   * 시작(`from`) 및 종료(`to`) 날짜가 제공되면, 해당 날짜 범위에 맞는 일정을
+   * 검색할 수 있도록 `where` 조건을 옵션에 추가
+   *
+   * @param userId
+   * @param from 일정 검색을 시작할 날짜
+   * @param to 일정 검색을 종료할 날짜
+   * @returns {Promise<ScheduleOptions>} 일정 검색을 위한 옵션 객체를 반환
+   */
+  async createScheduleOptions(
+    userId: string,
+    from?: string,
+    to?: string,
+  ): Promise<ScheduleOptions> {
+    let options: ScheduleOptions = {
+      userId: userId,
+    };
+
+    if (from && to) {
+      options = {
+        ...options,
+        where: {
+          [Op.and]: [
+            {
+              startTime: {
+                [Op.gte]: new Date(this.convertDateFormat(from)),
+              },
+            },
+            {
+              endTime: {
+                [Op.lte]: new Date(this.convertDateFormat(to)),
+              },
+            },
+          ],
+        },
+      };
+    }
+
+    return options;
+  }
+
+  /**
+   * `YYYYMMDDTHHMMSSZ` -> `YYYY-MM-DDTHH:MM:SSZ`
+   */
+  convertDateFormat(dateTimeStr: string) {
+    return dateTimeStr.replace(
+      /^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})Z$/,
+      '$1-$2-$3T$4:$5:$6Z',
+    );
   }
 }
