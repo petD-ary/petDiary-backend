@@ -8,7 +8,11 @@ import {
 } from 'sequelize';
 import { plainToInstance } from 'class-transformer';
 
-import { ScheduleDto, ScheduleDtoWithoutId } from './dto/schedule.dto';
+import {
+  SCHEDULE_EDIT_OPTIONS,
+  ScheduleDto,
+  ScheduleDtoWithoutId,
+} from './dto/schedule.dto';
 import { Schedule } from './entity/schedule.entity';
 import { REPEAT, RepeatDtoWithoutId } from './dto/repeat.dto';
 import { Repeat } from './entity/repeat.entity';
@@ -127,10 +131,24 @@ export class SchedulesService {
     return scheduleDto;
   }
 
-  // TODO 업데이트 수정
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async update(scheduleDto: ScheduleDto, options: UpdateOptions) {
-    // return Schedule.update(scheduleDto, options);
+  async update(
+    scheduleDto: ScheduleDto,
+    options: UpdateOptions,
+    editOptions: SCHEDULE_EDIT_OPTIONS,
+  ) {
+    const { startTime, endTime, ...scheduleDetails } = scheduleDto;
+    const startDateTime = new Date(startTime);
+    const endDateTime = new Date(endTime);
+    if (editOptions === SCHEDULE_EDIT_OPTIONS.ONLY_ONE_DAY) {
+      return Schedule.update(
+        {
+          ...scheduleDetails,
+          startTime: startDateTime,
+          endTime: endDateTime,
+        },
+        options,
+      );
+    }
   }
 
   async delete(options: DestroyOptions) {

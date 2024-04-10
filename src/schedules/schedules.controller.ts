@@ -67,9 +67,17 @@ export class SchedulesController {
   @ApiOperation({
     summary: '일정 업데이트',
   })
+  @ApiQuery({
+    name: 'editOptions',
+    required: false,
+    type: String,
+    description: '업데이트 옵션',
+    example: 'onlyOneDay',
+  })
   @UseGuards(AuthGuard)
   @Put('/')
   async put(@Req() req, @Body() schedule: ScheduleDto) {
+    const { editOptions } = req.query;
     const options = {
       where: {
         id: schedule.id,
@@ -77,7 +85,7 @@ export class SchedulesController {
       },
     };
 
-    return await this.schedulesService.update(schedule, options);
+    return await this.schedulesService.update(schedule, options, editOptions);
   }
 
   @ApiOperation({

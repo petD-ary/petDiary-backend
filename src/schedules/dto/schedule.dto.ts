@@ -99,6 +99,14 @@ export class ScheduleDto {
   memo: string;
 }
 
+export const SCHEDULE_EDIT_OPTIONS = {
+  ALL: 'all',
+  ONLY_ONE_DAY: 'onlyOneDay',
+  SINCE_DAY: 'sinceDay',
+};
+export type SCHEDULE_EDIT_OPTIONS =
+  (typeof SCHEDULE_EDIT_OPTIONS)[keyof typeof SCHEDULE_EDIT_OPTIONS];
+
 export class ScheduleDtoWithoutId extends OmitType(ScheduleDto, [
   'id',
 ] as const) {}
