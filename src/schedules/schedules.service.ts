@@ -9,10 +9,10 @@ import {
 import { plainToInstance } from 'class-transformer';
 
 import {
+  CreateScheduleDtoWithUserId,
   REPEAT,
   SCHEDULE_EDIT_OPTIONS,
   ScheduleDto,
-  ScheduleDtoWithoutId,
 } from './dto/schedule.dto';
 import { Schedule } from './entity/schedule.entity';
 import { NullishPropertiesOf } from 'sequelize/types/utils';
@@ -34,7 +34,7 @@ export class SchedulesService {
    * - `startTime`과 `endTime`은 Date 타입으로 변환하여 데이터베이스에 저장
    *    - 이는 일정을 기간으로 검색할 때 조회를 용이하게 하기 위함.
    */
-  async createScheduleAndInstance(value: ScheduleDtoWithoutId) {
+  async createScheduleAndInstance(value: CreateScheduleDtoWithUserId) {
     const {
       userId,
       repeat,
@@ -95,7 +95,7 @@ export class SchedulesService {
     }
   }
 
-  async getById(id: string) {
+  async getById(id: number) {
     const scheduleEntity = await ScheduleInstance.scope('find').findOne({
       where: {
         id: id,
@@ -108,7 +108,7 @@ export class SchedulesService {
     );
   }
 
-  async getByUserId(userId: string) {
+  async getByUserId(userId: number) {
     const scheduleEntity = await ScheduleInstance.scope('findAll').findAll({
       where: {
         userId: userId,
@@ -136,18 +136,97 @@ export class SchedulesService {
     options: UpdateOptions,
     editOptions: SCHEDULE_EDIT_OPTIONS,
   ) {
-    const { startTime, endTime, ...scheduleDetails } = scheduleDto;
+    const { id, startTime, endTime, ...scheduleDetails } = scheduleDto;
     const startDateTime = new Date(startTime);
     const endDateTime = new Date(endTime);
 
-    const schedule = await this.getById(scheduleDto.id);
+    const schedule = await this.getById(id);
 
     // 반복 일정 중에 하나만 수정한다면 기존 instance 삭제 후 새로 schedule, instance 만든다.
     // 반복 일정에서 제외된 별개의 일정을 생성하기 위함.
     if (editOptions === SCHEDULE_EDIT_OPTIONS.ONLY_ONE) {
       await this.delete(options);
+      delete scheduleDto.id;
       scheduleDto.repeat = REPEAT.NONE;
       scheduleDto.repeatCount = 1;
+      scheduleDto.userId = schedule.userId;
+      await this.createScheduleAndInstance(scheduleDto);
+    }
+
+    // 반복 일정이 아니므로 schedule, instance update
+    if (editOptions === SCHEDULE_EDIT_OPTIONS.NONE) {
+      await Schedule.update(scheduleDetails, {
+        where: { id: schedule.scheduleId },
+      });
+      await ScheduleInstance.update(
+        { startTime: startDateTime, endTime: endDateTime },
+        options,
+      );
+    }
+
+    // 반복 일정 전체 업데이트
+    if (editOptions === SCHEDULE_EDIT_OPTIONS.ALL) {
+      await Schedule.update(scheduleDetails, {
+        where: { id: schedule.scheduleId },
+      });
+      // 시간 변경사항이 없다면 일정 인스턴스 업데이트는 안 해도 된다.
+      if (schedule.startTime === startTime && schedule.endTime === endTime) {
+        return;
+      }
+      const scheduleInstances = await this.getByAll({
+        where: { scheduleId: schedule.scheduleId },
+      });
+      const baseStartTime = this.reverseAdjustDate(
+        startDateTime,
+        scheduleDto.repeat,
+        schedule.repeatIndex,
+      );
+      const baseEndTime = this.reverseAdjustDate(
+        endDateTime,
+        scheduleDto.repeat,
+        schedule.repeatIndex,
+      );
+      const updatePromises = (
+        scheduleInstances as unknown as ScheduleDto[]
+      ).map(async (v) => {
+        const adjustedStartTime = this.adjustDate(
+          baseStartTime,
+          scheduleDto.repeat,
+          v.repeatCount,
+        );
+        const adjustedEndTime = this.adjustDate(
+          baseEndTime,
+          scheduleDto.repeat,
+          v.repeatCount,
+        );
+        return await ScheduleInstance.update(
+          { startTime: adjustedStartTime, endTime: adjustedEndTime },
+          { where: { id: v.id } },
+        );
+      });
+
+      await Promise.all(updatePromises);
+    }
+
+    // 반복 일정 중 선택한 일정과 이후 일정 업데이트
+    // 기존 instance 는 삭제 후, 새로 schedule, instance 만든다.
+    if (editOptions === SCHEDULE_EDIT_OPTIONS.SINCE) {
+      const newRepeatCount = schedule.repeatCount - schedule.repeatIndex + 1;
+      const prevRepeatCount = schedule.repeatCount - newRepeatCount;
+      await this.delete({
+        where: {
+          scheduleId: schedule.scheduleId,
+          repeatIndex: { [Op.gte]: schedule.repeatIndex },
+        },
+      });
+      await Schedule.update(
+        { repeatCount: prevRepeatCount },
+        {
+          where: { id: schedule.scheduleId },
+        },
+      );
+      delete scheduleDto.id;
+      scheduleDto.repeatCount = newRepeatCount;
       scheduleDto.userId = schedule.userId;
       await this.createScheduleAndInstance(scheduleDto);
     }
@@ -184,6 +263,37 @@ export class SchedulesService {
         throw new Error('Invalid repeat type');
     }
     return newDate;
+  }
+
+  /**
+   * `adjustDate` 의 역산.
+   *
+   * 일정 업데이트할 때 `repeatCount`, `repeat` 로 일정 시간 계산하기 위해 `originalDate`를 구함
+   */
+  reverseAdjustDate(newDate: Date, repeat: REPEAT, count: number): Date {
+    const originalDate = new Date(newDate);
+    switch (repeat) {
+      case REPEAT.NONE:
+        break;
+      case REPEAT.DAILY:
+        originalDate.setDate(newDate.getDate() - count);
+        break;
+      case REPEAT.WEEKLY:
+        originalDate.setDate(newDate.getDate() - count * 7);
+        break;
+      case REPEAT.BIWEEKLY:
+        originalDate.setDate(newDate.getDate() - count * 14);
+        break;
+      case REPEAT.MONTHLY:
+        originalDate.setMonth(newDate.getMonth() - count);
+        break;
+      case REPEAT.YEARLY:
+        originalDate.setFullYear(newDate.getFullYear() - count);
+        break;
+      default:
+        throw new Error('Invalid repeat type');
+    }
+    return originalDate;
   }
 
   /**
@@ -245,7 +355,7 @@ export class SchedulesService {
    * `excludeExtraneousValues: true` 추가하고, `Dto` 에 `@Expose()` 데코레이터 추가하여
    * 명시된 필드만 객체를 직렬화하여 순환 참조 발생을 피한다.
    */
-  convertToDto<T, V>(entity: T, dtoType: new () => V): V {
+  convertToDto<T, V>(entity: T, dtoType: new () => V) {
     return plainToInstance(dtoType, entity, {
       excludeExtraneousValues: true,
     });

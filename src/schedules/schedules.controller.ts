@@ -13,9 +13,10 @@ import { ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { SchedulesService } from './schedules.service';
 import {
+  CreateScheduleDto,
+  CreateScheduleDtoWithUserId,
   ScheduleDto,
   ScheduleDtoOnlyId,
-  ScheduleDtoWithoutId,
 } from './dto/schedule.dto';
 
 @Controller('schedules')
@@ -28,9 +29,14 @@ export class SchedulesController {
   })
   @UseGuards(AuthGuard)
   @Post('/')
-  async create(@Req() req, @Body() schedule: ScheduleDtoWithoutId) {
-    schedule['userId'] = req.user.id;
-    return await this.schedulesService.createScheduleAndInstance(schedule);
+  async create(@Req() req, @Body() schedule: CreateScheduleDto) {
+    const scheduleDtoWithoutId: CreateScheduleDtoWithUserId = {
+      ...schedule,
+      userId: req.user.id,
+    };
+    return await this.schedulesService.createScheduleAndInstance(
+      scheduleDtoWithoutId,
+    );
   }
 
   @ApiOperation({

@@ -4,6 +4,8 @@ import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
 const SCHEDULE_DTO_EXAMPLE = {
   ID: '1',
+  USER_ID: 2,
+  SCHEDULE_ID: 3,
   TITLE: '네로 병원가기',
   ADDRESS: '히히 동물병원',
   LAT: 37.5222644,
@@ -18,16 +20,21 @@ const SCHEDULE_DTO_EXAMPLE = {
 
 export class ScheduleDto {
   @Expose()
-  @IsString()
+  @IsNumber()
   @ApiProperty({ description: 'id', example: SCHEDULE_DTO_EXAMPLE.ID })
-  id: string;
+  id: number;
 
   @Expose()
   @IsNumber()
+  @ApiProperty({ description: 'userId', example: SCHEDULE_DTO_EXAMPLE.USER_ID })
   userId: number;
 
   @Expose()
   @IsNumber()
+  @ApiProperty({
+    description: 'scheduleId',
+    example: SCHEDULE_DTO_EXAMPLE.SCHEDULE_ID,
+  })
   scheduleId: number;
 
   @Expose()
@@ -83,6 +90,10 @@ export class ScheduleDto {
   repeatCount: number;
 
   @Expose()
+  @IsNumber()
+  repeatIndex: number;
+
+  @Expose()
   @Transform(({ obj }) => obj.scheduleInfo?.memo)
   @IsString()
   @ApiProperty({ description: 'memo', example: SCHEDULE_DTO_EXAMPLE.MEMO })
@@ -126,6 +137,17 @@ export type REPEAT = (typeof REPEAT)[keyof typeof REPEAT];
 
 export class ScheduleDtoWithoutId extends OmitType(ScheduleDto, [
   'id',
+] as const) {}
+
+export class CreateScheduleDto extends OmitType(ScheduleDto, [
+  'id',
+  'userId',
+  'scheduleId',
+] as const) {}
+
+export class CreateScheduleDtoWithUserId extends OmitType(ScheduleDto, [
+  'id',
+  'scheduleId',
 ] as const) {}
 
 export class ScheduleDtoOnlyId extends PickType(ScheduleDto, ['id'] as const) {}
