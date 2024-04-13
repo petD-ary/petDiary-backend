@@ -13,6 +13,7 @@ import {
   REPEAT,
   SCHEDULE_EDIT_OPTIONS,
   ScheduleDto,
+  ScheduleDtoOnlyId,
 } from './dto/schedule.dto';
 import { Schedule } from './entity/schedule.entity';
 import { NullishPropertiesOf } from 'sequelize/types/utils';
@@ -145,7 +146,7 @@ export class SchedulesService {
     // 반복 일정 중에 하나만 수정한다면 기존 instance 삭제 후 새로 schedule, instance 만든다.
     // 반복 일정에서 제외된 별개의 일정을 생성하기 위함.
     if (editOptions === SCHEDULE_EDIT_OPTIONS.ONLY_ONE) {
-      await this.delete(options);
+      await this.deleteInstance(options);
       delete scheduleDto.id;
       scheduleDto.repeat = REPEAT.NONE;
       scheduleDto.repeatCount = 1;
@@ -213,7 +214,7 @@ export class SchedulesService {
     if (editOptions === SCHEDULE_EDIT_OPTIONS.SINCE) {
       const newRepeatCount = schedule.repeatCount - schedule.repeatIndex + 1;
       const prevRepeatCount = schedule.repeatCount - newRepeatCount;
-      await this.delete({
+      await this.deleteInstance({
         where: {
           scheduleId: schedule.scheduleId,
           repeatIndex: { [Op.gte]: schedule.repeatIndex },
@@ -232,7 +233,60 @@ export class SchedulesService {
     }
   }
 
+  async deleteWithEditOptions(
+    id: number,
+    userId: number,
+    editOptions: SCHEDULE_EDIT_OPTIONS,
+  ) {
+    const schedule = await this.getById(id);
+    const options = { where: { id: schedule.scheduleId } };
+    const instanceOptions = { where: { id, userId } };
+    const instanceAllOptions = {
+      where: { scheduleId: schedule.scheduleId, userId },
+    };
+    const instanceSinceOptions = {
+      where: {
+        scheduleId: schedule.scheduleId,
+        repeatIndex: { [Op.gte]: schedule.repeatIndex },
+        userId,
+      },
+    };
+
+    // 반복 일정이 아니므로 schedule, instance delete
+    if (editOptions === SCHEDULE_EDIT_OPTIONS.NONE) {
+      this.delete(options);
+      this.deleteInstance(instanceOptions);
+    }
+
+    // 반복 일정 중에 하나만 삭제
+    if (editOptions === SCHEDULE_EDIT_OPTIONS.ONLY_ONE) {
+      this.deleteInstance(instanceOptions);
+    }
+
+    // 반복 일정 전체 삭제
+    if (editOptions === SCHEDULE_EDIT_OPTIONS.ALL) {
+      this.delete(options);
+      this.deleteInstance(instanceAllOptions);
+    }
+
+    // 반복 일정 중 선택한 일정과 이후 일정 삭제
+    if (editOptions === SCHEDULE_EDIT_OPTIONS.SINCE) {
+      const prevRepeatCount = schedule.repeatIndex - 1;
+      await Schedule.update(
+        { repeatCount: prevRepeatCount },
+        {
+          where: { id: schedule.scheduleId },
+        },
+      );
+      this.deleteInstance(instanceSinceOptions);
+    }
+  }
+
   async delete(options: DestroyOptions) {
+    return Schedule.destroy(options);
+  }
+
+  async deleteInstance(options: DestroyOptions) {
     return ScheduleInstance.destroy(options);
   }
 

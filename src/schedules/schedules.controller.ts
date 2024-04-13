@@ -97,16 +97,22 @@ export class SchedulesController {
   @ApiOperation({
     summary: '일정 삭제',
   })
+  @ApiQuery({
+    name: 'editOptions',
+    required: false,
+    type: String,
+    description: '삭제 옵션',
+    example: 'onlyOne',
+  })
   @UseGuards(AuthGuard)
   @Delete('/')
   async delete(@Req() req, @Body() schedule: ScheduleDtoOnlyId) {
-    const options = {
-      where: {
-        id: schedule.id,
-        userId: req.user.id,
-      },
-    };
+    const { editOptions } = req.query;
 
-    return await this.schedulesService.delete(options);
+    return await this.schedulesService.deleteWithEditOptions(
+      schedule.id,
+      req.user.id,
+      editOptions,
+    );
   }
 }
