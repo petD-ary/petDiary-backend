@@ -1,38 +1,18 @@
-import {
-  Table,
-  Column,
-  Model,
-  DataType,
-  ForeignKey,
-  BelongsTo,
-  Scopes,
-} from 'sequelize-typescript';
-import { User } from 'src/users/entity/user.entity';
-import { Repeat } from './repeat.entity';
+import { Table, Column, Model, DataType } from 'sequelize-typescript';
 
 @Table
-@Scopes(() => ({
-  findAll: {
-    include: [Repeat],
-  },
-  find: {
-    include: [Repeat],
-  },
-}))
 export class Schedule extends Model<Schedule> {
-  @ForeignKey(() => User)
-  @Column
-  userId: number;
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
+  repeat: string;
 
-  @BelongsTo(() => User)
-  user: User;
-
-  @ForeignKey(() => Repeat)
-  @Column
-  repeatId: number;
-
-  @BelongsTo(() => Repeat)
-  repeatInfo: Repeat;
+  @Column({
+    type: DataType.DOUBLE,
+    allowNull: false,
+  })
+  repeatCount: number;
 
   @Column({
     type: DataType.STRING,
@@ -63,18 +43,6 @@ export class Schedule extends Model<Schedule> {
     allowNull: false,
   })
   alarm: string;
-
-  @Column({
-    type: DataType.DATE,
-    allowNull: false,
-  })
-  startTime: Date;
-
-  @Column({
-    type: DataType.DATE,
-    allowNull: false,
-  })
-  endTime: Date;
 
   @Column({
     type: DataType.STRING,

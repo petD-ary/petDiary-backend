@@ -9,14 +9,14 @@ import {
 import { plainToInstance } from 'class-transformer';
 
 import {
+  REPEAT,
   SCHEDULE_EDIT_OPTIONS,
   ScheduleDto,
   ScheduleDtoWithoutId,
 } from './dto/schedule.dto';
 import { Schedule } from './entity/schedule.entity';
-import { REPEAT, RepeatDtoWithoutId } from './dto/repeat.dto';
-import { Repeat } from './entity/repeat.entity';
 import { NullishPropertiesOf } from 'sequelize/types/utils';
+import { ScheduleInstance } from './entity/scheduleInstance.entity';
 
 interface ScheduleOptions extends FindOptions {
   userId?: string;
@@ -29,106 +29,106 @@ export class SchedulesService {
    * - `repeat`와 `repeatCount`는 반복 규칙을 정의
    *    - `repeat`: 일정의 반복 유형을 정의 (반복 안함, 매일, 매주, 격주, 매월, 매년).
    *    - `repeatCount`: 일정이 반복되어야 하는 횟수를 정의.
-   * - 반복 규칙은 별도의 `repeat` 테이블에 저장되며, 각 반복 일정은 생성 시 부여받은 `repeatId`로 연결
+   * - 반복 일정 중 인스턴스마다 달라지는 `startTime`, `endTime`, `repeatIndex`는 별도의
+   * `scheduleInstance` 테이블에 저장되며, 각 반복 일정은 `scheduleId`로 연결
    * - `startTime`과 `endTime`은 Date 타입으로 변환하여 데이터베이스에 저장
    *    - 이는 일정을 기간으로 검색할 때 조회를 용이하게 하기 위함.
    */
-  async createSchedule(value: ScheduleDtoWithoutId) {
+  async createScheduleAndInstance(value: ScheduleDtoWithoutId) {
     const {
+      userId,
       repeat,
       repeatCount = 1,
       startTime,
       endTime,
-      ...scheduleDetails
+      ...schedule
     } = value;
     const startDateTime = new Date(startTime);
     const endDateTime = new Date(endTime);
+    const scheduleId = (
+      await this.createSchedule({ ...schedule, repeat, repeatCount })
+    ).id;
 
-    if (repeat === REPEAT.NONE) {
-      await this.createSingleSchedule({
-        ...scheduleDetails,
-        startTime: startDateTime,
-        endTime: endDateTime,
-      });
-    } else {
-      const repeatId = (await this.createRepeat({ repeat, repeatCount })).id;
-      await this.createRepeatedSchedules(
-        startDateTime,
-        endDateTime,
-        repeat,
-        repeatCount,
-        repeatId,
-        scheduleDetails,
-      );
-    }
+    await this.createRepeatedScheduleInstances(
+      userId,
+      scheduleId,
+      repeat,
+      repeatCount,
+      startDateTime,
+      endDateTime,
+    );
 
     return;
   }
 
   /**
-   * 일정 생성
+   * `startTime`, `endTime`, `repeatIndex` 제외한 schedule 생성
    */
-  async createSingleSchedule(
+  async createSchedule(
     schedule: Optional<Schedule, NullishPropertiesOf<Schedule>>,
   ) {
-    await Schedule.create(schedule);
+    return await Schedule.create(schedule);
   }
 
   /**
-   * `repeatCount` 만큼 반복 일정 생성
+   * `repeatCount` 만큼 반복 일정 인스턴스 생성
    */
-  async createRepeatedSchedules(
-    baseStartTime: Date,
-    baseEndTime: Date,
+  async createRepeatedScheduleInstances(
+    userId: number,
+    scheduleId: number,
     repeat: string,
     repeatCount: number,
-    repeatId: number,
-    scheduleDetails: Optional<Schedule, NullishPropertiesOf<Schedule>>,
+    baseStartTime: Date,
+    baseEndTime: Date,
   ) {
     for (let i = 0; i < repeatCount; i++) {
       const startTime = this.adjustDate(baseStartTime, repeat, i);
       const endTime = this.adjustDate(baseEndTime, repeat, i);
 
-      await Schedule.create({
-        ...scheduleDetails,
-        repeatId,
+      await ScheduleInstance.create({
+        userId,
+        scheduleId,
+        repeatIndex: i + 1,
         startTime,
         endTime,
       });
     }
   }
 
-  /**
-   * `repeat`, `repeatCount` 저장
-   */
-  async createRepeat(value: RepeatDtoWithoutId) {
-    return await Repeat.create(value);
+  async getById(id: string) {
+    const scheduleEntity = await ScheduleInstance.scope('find').findOne({
+      where: {
+        id: id,
+      },
+    });
+
+    return this.convertToDto<ScheduleInstance, ScheduleDto>(
+      scheduleEntity,
+      ScheduleDto,
+    );
   }
 
   async getByUserId(userId: string) {
-    const scheduleEntity = await Schedule.scope('findAll').findAll({
+    const scheduleEntity = await ScheduleInstance.scope('findAll').findAll({
       where: {
         userId: userId,
       },
     });
 
-    // excludeExtraneousValues: true 추가하고, ScheduleDto 에서 @Expose() 데코레이터 추가하여
-    // 명시된 필드만 객체를 직렬화하여 순환 참조 발생을 피한다.
-    const scheduleDto = plainToInstance(ScheduleDto, scheduleEntity, {
-      excludeExtraneousValues: true,
-    });
-    return scheduleDto;
+    return this.convertToDto<ScheduleInstance[], ScheduleDto>(
+      scheduleEntity,
+      ScheduleDto,
+    );
   }
 
   async getByAll(options: FindOptions) {
-    const scheduleEntity = await Schedule.scope('findAll').findAll(options);
+    const scheduleEntity =
+      await ScheduleInstance.scope('findAll').findAll(options);
 
-    // excludeExtraneousValues: true 추가하고, ScheduleDto 에서 @Expose() 데코레이터 추가하여
-    // 명시된 필드만 객체를 직렬화하여 순환 참조 발생을 피한다.
-    const scheduleDto = plainToInstance(ScheduleDto, scheduleEntity, {
-      excludeExtraneousValues: true,
-    });
-    return scheduleDto;
+    return this.convertToDto<ScheduleInstance[], ScheduleDto>(
+      scheduleEntity,
+      ScheduleDto,
+    );
   }
 
   async update(
@@ -139,20 +139,22 @@ export class SchedulesService {
     const { startTime, endTime, ...scheduleDetails } = scheduleDto;
     const startDateTime = new Date(startTime);
     const endDateTime = new Date(endTime);
-    if (editOptions === SCHEDULE_EDIT_OPTIONS.ONLY_ONE_DAY) {
-      return Schedule.update(
-        {
-          ...scheduleDetails,
-          startTime: startDateTime,
-          endTime: endDateTime,
-        },
-        options,
-      );
+
+    const schedule = await this.getById(scheduleDto.id);
+
+    // 반복 일정 중에 하나만 수정한다면 기존 instance 삭제 후 새로 schedule, instance 만든다.
+    // 반복 일정에서 제외된 별개의 일정을 생성하기 위함.
+    if (editOptions === SCHEDULE_EDIT_OPTIONS.ONLY_ONE) {
+      await this.delete(options);
+      scheduleDto.repeat = REPEAT.NONE;
+      scheduleDto.repeatCount = 1;
+      scheduleDto.userId = schedule.userId;
+      await this.createScheduleAndInstance(scheduleDto);
     }
   }
 
   async delete(options: DestroyOptions) {
-    return Schedule.destroy(options);
+    return ScheduleInstance.destroy(options);
   }
 
   /**
@@ -161,6 +163,8 @@ export class SchedulesService {
   adjustDate(date: Date, repeat: REPEAT, count: number) {
     const newDate = new Date(date);
     switch (repeat) {
+      case REPEAT.NONE:
+        break;
       case REPEAT.DAILY:
         newDate.setDate(date.getDate() + count);
         break;
@@ -233,5 +237,17 @@ export class SchedulesService {
       /^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})Z$/,
       '$1-$2-$3T$4:$5:$6Z',
     );
+  }
+
+  /**
+   * `plainToInstance` 를 사용해서 `Entity` 를 `Dto` 로 변환한다.
+   *
+   * `excludeExtraneousValues: true` 추가하고, `Dto` 에 `@Expose()` 데코레이터 추가하여
+   * 명시된 필드만 객체를 직렬화하여 순환 참조 발생을 피한다.
+   */
+  convertToDto<T, V>(entity: T, dtoType: new () => V): V {
+    return plainToInstance(dtoType, entity, {
+      excludeExtraneousValues: true,
+    });
   }
 }

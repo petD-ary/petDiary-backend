@@ -30,7 +30,7 @@ export class SchedulesController {
   @Post('/')
   async create(@Req() req, @Body() schedule: ScheduleDtoWithoutId) {
     schedule['userId'] = req.user.id;
-    return await this.schedulesService.createSchedule(schedule);
+    return await this.schedulesService.createScheduleAndInstance(schedule);
   }
 
   @ApiOperation({
@@ -72,7 +72,7 @@ export class SchedulesController {
     required: false,
     type: String,
     description: '업데이트 옵션',
-    example: 'onlyOneDay',
+    example: 'onlyOne',
   })
   @UseGuards(AuthGuard)
   @Put('/')
