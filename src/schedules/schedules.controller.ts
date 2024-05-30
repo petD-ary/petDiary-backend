@@ -77,7 +77,7 @@ export class SchedulesController {
     name: 'editOptions',
     required: false,
     type: String,
-    description: '업데이트 옵션',
+    description: '업데이트 옵션(none, onlyOne, since, all)',
     example: 'onlyOne',
   })
   @UseGuards(AuthGuard)

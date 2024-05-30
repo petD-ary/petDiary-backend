@@ -13,7 +13,6 @@ import {
   REPEAT,
   SCHEDULE_EDIT_OPTIONS,
   ScheduleDto,
-  ScheduleDtoOnlyId,
 } from './dto/schedule.dto';
 import { Schedule } from './entity/schedule.entity';
 import { NullishPropertiesOf } from 'sequelize/types/utils';
@@ -193,12 +192,12 @@ export class SchedulesService {
         const adjustedStartTime = this.adjustDate(
           baseStartTime,
           scheduleDto.repeat,
-          v.repeatCount,
+          v.repeatIndex,
         );
         const adjustedEndTime = this.adjustDate(
           baseEndTime,
           scheduleDto.repeat,
-          v.repeatCount,
+          v.repeatIndex,
         );
         return await ScheduleInstance.update(
           { startTime: adjustedStartTime, endTime: adjustedEndTime },

@@ -7,6 +7,7 @@ import { AuthModule } from './auth/auth.module';
 import { PetsModule } from './pets/pets.module';
 import { UploadModule } from './uploads/uploads.module';
 import { SchedulesModule } from './schedules/schedules.module';
+import { KnowledgesModule } from './knowledges/knowledges.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { SchedulesModule } from './schedules/schedules.module';
     AuthModule,
     UploadModule,
     SchedulesModule,
+    KnowledgesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
