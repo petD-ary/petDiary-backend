@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 
-import { KnowledgesService } from './knowledges.service';
+import { DiseasesService } from './diseases.service';
 import {
   DiseaseDto,
   DiseaseDtoOnlyId,
@@ -19,15 +19,15 @@ import {
 
 @Controller('knowledges')
 @ApiTags('knowledges')
-export class KnowledgesController {
-  constructor(private readonly knowledgesService: KnowledgesService) {}
+export class DiseasesController {
+  constructor(private readonly diseasesService: DiseasesService) {}
 
   @ApiOperation({
     summary: '질병 사전 추가',
   })
   @Post('/disease')
   async create(@Body() disease: DiseaseDtoWithoutId) {
-    return await this.knowledgesService.create(disease);
+    return await this.diseasesService.create(disease);
   }
 
   @ApiOperation({
@@ -40,7 +40,7 @@ export class KnowledgesController {
       throw new BadRequestException('Body must be an array.');
     }
 
-    return await this.knowledgesService.createAll(diseases);
+    return await this.diseasesService.createAll(diseases);
   }
 
   @ApiOperation({
@@ -48,7 +48,7 @@ export class KnowledgesController {
   })
   @Get('/disease')
   async get() {
-    return await this.knowledgesService.getByAll();
+    return await this.diseasesService.getByAll();
   }
 
   @ApiOperation({
@@ -61,7 +61,7 @@ export class KnowledgesController {
         id: id,
       },
     };
-    return await this.knowledgesService.getBy(options);
+    return await this.diseasesService.getBy(options);
   }
 
   @ApiOperation({
@@ -69,7 +69,7 @@ export class KnowledgesController {
   })
   @Put('/disease')
   async put(@Body() disease: DiseaseDto) {
-    return await this.knowledgesService.updateDiseaseWithSymptoms(
+    return await this.diseasesService.updateDiseaseWithSymptoms(
       disease.id,
       disease,
     );
@@ -86,6 +86,6 @@ export class KnowledgesController {
       },
     };
 
-    return await this.knowledgesService.delete(options);
+    return await this.diseasesService.delete(options);
   }
 }

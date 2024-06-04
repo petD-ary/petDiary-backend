@@ -14,7 +14,7 @@ import { Symptom } from './entity/symptom.entity';
 import { DiseaseSymptomMap } from './entity/diseaseSymptomMap.entity';
 
 @Injectable()
-export class KnowledgesService {
+export class DiseasesService {
   async create(value: DiseaseDtoWithoutId) {
     const { symptoms, ...diseaseDetail } = value;
     const diseaseId = (await this.createDisease(diseaseDetail)).id;
