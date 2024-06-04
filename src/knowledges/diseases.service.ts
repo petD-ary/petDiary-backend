@@ -12,6 +12,7 @@ import { Disease } from './entity/disease.entity';
 import { SymptomDtoWithoutId } from './dto/symptom.dto';
 import { Symptom } from './entity/symptom.entity';
 import { DiseaseSymptomMap } from './entity/diseaseSymptomMap.entity';
+import { Sequelize } from 'sequelize-typescript';
 
 @Injectable()
 export class DiseasesService {
@@ -60,8 +61,8 @@ export class DiseasesService {
     }
   }
 
-  async getByAll() {
-    return Disease.scope('findAll').findAll();
+  async getByAll(options?: FindOptions) {
+    return Disease.scope('findAll').findAll(options);
   }
 
   async getBy(options: FindOptions) {
@@ -164,5 +165,34 @@ export class DiseasesService {
         },
       });
     }
+  }
+
+  createSortOrder(sort: string): string[] {
+    let order = [];
+    const [sortField, sortOrder] = sort?.split(',') || [];
+    if (sortField === 'riskLevel' && sortOrder === 'high') {
+      order = [
+        [
+          Sequelize.literal(`CASE
+                WHEN "Disease"."riskLevel" = '높음' THEN 1
+                WHEN "Disease"."riskLevel" = '보통' THEN 2
+                WHEN "Disease"."riskLevel" = '낮음' THEN 3
+                ELSE 4
+              END`),
+        ],
+      ];
+    } else if (sortField === 'riskLevel' && sortOrder === 'low') {
+      order = [
+        [
+          Sequelize.literal(`CASE
+                WHEN "Disease"."riskLevel" = '높음' THEN 4
+                WHEN "Disease"."riskLevel" = '보통' THEN 3
+                WHEN "Disease"."riskLevel" = '낮음' THEN 2
+                ELSE 1
+              END`),
+        ],
+      ];
+    }
+    return order;
   }
 }

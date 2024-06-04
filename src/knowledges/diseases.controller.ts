@@ -7,8 +7,9 @@ import {
   Param,
   Post,
   Put,
+  Req,
 } from '@nestjs/common';
-import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 
 import { DiseasesService } from './diseases.service';
 import {
@@ -46,9 +47,33 @@ export class DiseasesController {
   @ApiOperation({
     summary: '질병 사전',
   })
+  @ApiQuery({
+    name: 'petType',
+    required: false,
+    type: String,
+    description: '펫 타입',
+    example: 'cat',
+  })
+  @ApiQuery({
+    name: 'sort',
+    required: false,
+    type: String,
+    description: '정렬 방식',
+    example: 'riskLevel,high',
+  })
   @Get('/disease')
-  async get() {
-    return await this.diseasesService.getByAll();
+  async get(@Req() req) {
+    const { petType, sort } = req.query;
+    const options = {};
+    const order = this.diseasesService.createSortOrder(sort);
+    if (petType) {
+      options['where'] = {
+        petType: petType,
+      };
+    }
+    options['order'] = order;
+
+    return await this.diseasesService.getByAll(options);
   }
 
   @ApiOperation({
