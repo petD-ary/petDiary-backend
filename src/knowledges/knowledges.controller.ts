@@ -4,6 +4,7 @@ import {
   Controller,
   Delete,
   Get,
+  Param,
   Post,
   Put,
 } from '@nestjs/common';
@@ -48,6 +49,19 @@ export class KnowledgesController {
   @Get('/disease')
   async get() {
     return await this.knowledgesService.getByAll();
+  }
+
+  @ApiOperation({
+    summary: '질병 사전 상세',
+  })
+  @Get('/disease/:id')
+  async getById(@Param('id') id: string) {
+    const options = {
+      where: {
+        id: id,
+      },
+    };
+    return await this.knowledgesService.getBy(options);
   }
 
   @ApiOperation({
