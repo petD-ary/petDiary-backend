@@ -48,6 +48,20 @@ export class DiseasesController {
     summary: '질병 사전',
   })
   @ApiQuery({
+    name: 'size',
+    required: false,
+    type: String,
+    description: '사이즈',
+    example: '15',
+  })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: String,
+    description: '페이지',
+    example: '1',
+  })
+  @ApiQuery({
     name: 'petType',
     required: false,
     type: String,
@@ -63,17 +77,25 @@ export class DiseasesController {
   })
   @Get('/disease')
   async get(@Req() req) {
-    const { petType, sort } = req.query;
-    const options = {};
-    const order = this.diseasesService.createSortOrder(sort);
-    if (petType) {
-      options['where'] = {
-        petType: petType,
-      };
-    }
-    options['order'] = order;
+    const { petType, sort, page = 1, size = 15 } = req.query;
+    const options = {
+      where: petType ? { petType } : undefined,
+      order: this.diseasesService.createSortOrder(sort),
+      offset: (page - 1) * size,
+      limit: size,
+    };
+    const [data, count] = await Promise.all([
+      this.diseasesService.getByAll(options),
+      this.diseasesService.countByAll(options),
+    ]);
+    const totalPages = Math.ceil(count / size);
+    const isEnd = page >= totalPages;
 
-    return await this.diseasesService.getByAll(options);
+    return {
+      data,
+      isEnd,
+      totalPages,
+    };
   }
 
   @ApiOperation({

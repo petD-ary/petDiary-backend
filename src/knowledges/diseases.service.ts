@@ -65,6 +65,10 @@ export class DiseasesService {
     return Disease.scope('findAll').findAll(options);
   }
 
+  async countByAll(options?: FindOptions) {
+    return Disease.count(options);
+  }
+
   async getBy(options: FindOptions) {
     return Disease.scope('findOne').findOne(options);
   }
@@ -167,6 +171,13 @@ export class DiseasesService {
     }
   }
 
+  /**
+   * 주어진 `sortField`와 `sortOrder` 문자열을 사용하여 Sequelize 쿼리 정렬 순서를 생성
+   * `riskLevel` 필드에 대해 `높음`, `보통`, `낮음` 순서로 정렬
+   *
+   * @param sort - `'sortField,sortOrder'` 형식의 문자열. 예: `'riskLevel,high'`
+   * @returns - 정렬 순서를 나타내는 Sequelize 쿼리 옵션 배열
+   */
   createSortOrder(sort: string): string[] {
     let order = [];
     const [sortField, sortOrder] = sort?.split(',') || [];
