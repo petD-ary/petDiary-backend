@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import {
   DestroyOptions,
   FindOptions,
+  Op,
   Optional,
   UpdateOptions,
 } from 'sequelize';
@@ -205,5 +206,51 @@ export class DiseasesService {
       ];
     }
     return order;
+  }
+
+  /**
+   * 주어진 매개변수를 기반으로 Sequelize FindOptions 객체를 생성
+   *
+   * @param petType - 결과를 필터링할 애완동물 종류
+   * @param cursor - 페이지네이션을 위한 커서 값
+   * @param sort - 정렬 기준 필드와 정렬 순서. 예: `'riskLevel,high'`
+   * @param size - 페이지당 반환되는 결과 수
+   * @returns - Sequelize FindOptions 객체
+   */
+  createOptions(
+    petType?: string,
+    cursor?: string,
+    sort?: string,
+    size?: number,
+  ): FindOptions {
+    let cursorExpression = '';
+    const [sortField, sortOrder] = sort?.split(',') || [];
+    if (sortField === 'riskLevel' && sortOrder === 'high') {
+      const riskLevel = '"Disease"."riskLevel"';
+      cursorExpression = `CAST(CONCAT(LPAD(${riskLevel}, 1, \'0\'), LPAD(CAST(POWER(10, 4) - CAST("Disease"."id" AS NUMERIC) AS TEXT), 4, \'0\')) AS NUMERIC)`;
+    } else if (sortField === 'riskLevel' && sortOrder === 'low') {
+      const riskLevel =
+        'CAST(10 - CAST("Disease"."riskLevel" AS NUMERIC) AS TEXT)';
+      cursorExpression = `CAST(CONCAT(LPAD(${riskLevel}, 1, \'0\'), LPAD(CAST(POWER(10, 4) - CAST("Disease"."id" AS NUMERIC) AS TEXT), 4, \'0\')) AS NUMERIC)`;
+    }
+
+    const options: FindOptions = {
+      where: {
+        ...(petType && { petType }),
+        ...(cursor && {
+          [Op.and]: Sequelize.literal(`${cursorExpression} < ${cursor}`),
+        }),
+      },
+      order: [
+        [Sequelize.literal(cursorExpression), 'DESC'],
+        ['id', 'DESC'],
+      ],
+      attributes: {
+        include: [[Sequelize.literal(cursorExpression), 'cursor']],
+      },
+      limit: Number(size) + 1,
+    };
+
+    return options;
   }
 }

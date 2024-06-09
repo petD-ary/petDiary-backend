@@ -55,11 +55,11 @@ export class DiseasesController {
     example: '15',
   })
   @ApiQuery({
-    name: 'page',
+    name: 'cursor',
     required: false,
     type: String,
-    description: '페이지',
-    example: '1',
+    description: '커서',
+    example: '100000',
   })
   @ApiQuery({
     name: 'petType',
@@ -77,22 +77,24 @@ export class DiseasesController {
   })
   @Get('/disease')
   async get(@Req() req) {
-    const { petType, sort, page = 1, size = 15 } = req.query;
-    const options = {
-      where: petType ? { petType } : undefined,
-      order: this.diseasesService.createSortOrder(sort),
-      offset: (page - 1) * size,
-      limit: size,
-    };
+    const { petType, cursor, sort, size = 15 } = req.query;
+    const options = this.diseasesService.createOptions(
+      petType,
+      cursor,
+      sort,
+      size,
+    );
+    const countOptions = this.diseasesService.createOptions(petType);
     const [data, count] = await Promise.all([
       this.diseasesService.getByAll(options),
-      this.diseasesService.countByAll(options),
+      this.diseasesService.countByAll(countOptions),
     ]);
     const totalPages = Math.ceil(count / size);
-    const isEnd = page >= totalPages;
+    // 요청할 때 size + 1 로 요청. 요청한 데이터 양이 실제 반환된 데이터 양보다 작은 경우, 마지막 페이지로 판별.
+    const isEnd = data.length <= size;
 
     return {
-      data,
+      data: data.slice(0, size),
       isEnd,
       totalPages,
     };
