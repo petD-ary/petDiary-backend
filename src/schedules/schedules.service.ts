@@ -366,13 +366,15 @@ export class SchedulesService {
     to?: string,
   ): Promise<ScheduleOptions> {
     let options: ScheduleOptions = {
-      userId: userId,
+      where: {
+        userId: userId,
+      },
     };
 
     if (from && to) {
       options = {
-        ...options,
         where: {
+          ...options.where,
           [Op.and]: [
             {
               startTime: {
