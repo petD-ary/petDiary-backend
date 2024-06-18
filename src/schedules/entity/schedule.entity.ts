@@ -24,6 +24,12 @@ export class Schedule extends Model<Schedule> {
     type: DataType.STRING,
     allowNull: false,
   })
+  place: string;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
   address: string;
 
   @Column({

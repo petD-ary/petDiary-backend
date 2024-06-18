@@ -7,7 +7,8 @@ const SCHEDULE_DTO_EXAMPLE = {
   USER_ID: 2,
   SCHEDULE_ID: 3,
   TITLE: '네로 병원가기',
-  ADDRESS: '히히 동물병원',
+  PLACE: '히히 동물병원',
+  ADDRESS: '서울 강남구 도산대로78길 32 1층1호',
   LAT: 37.5222644,
   LNG: 127.0461,
   ALARM: '24h',
@@ -43,6 +44,15 @@ export class ScheduleDto {
   @IsNotEmpty()
   @ApiProperty({ description: 'title', example: SCHEDULE_DTO_EXAMPLE.TITLE })
   title: string;
+
+  @Expose()
+  @Transform(({ obj }) => obj.scheduleInfo?.place)
+  @IsString()
+  @ApiProperty({
+    description: 'place',
+    example: SCHEDULE_DTO_EXAMPLE.PLACE,
+  })
+  place: string;
 
   @Expose()
   @Transform(({ obj }) => obj.scheduleInfo?.address)
