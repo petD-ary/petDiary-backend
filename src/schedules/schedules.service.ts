@@ -375,16 +375,34 @@ export class SchedulesService {
       options = {
         where: {
           ...options.where,
-          [Op.and]: [
+          [Op.or]: [
             {
-              startTime: {
-                [Op.gte]: new Date(this.convertDateFormat(from)),
-              },
+              [Op.and]: [
+                {
+                  startTime: {
+                    [Op.gte]: new Date(this.convertDateFormat(from)),
+                  },
+                },
+                {
+                  startTime: {
+                    [Op.lte]: new Date(this.convertDateFormat(to)),
+                  },
+                },
+              ],
             },
             {
-              endTime: {
-                [Op.lte]: new Date(this.convertDateFormat(to)),
-              },
+              [Op.and]: [
+                {
+                  endTime: {
+                    [Op.gte]: new Date(this.convertDateFormat(from)),
+                  },
+                },
+                {
+                  endTime: {
+                    [Op.lte]: new Date(this.convertDateFormat(to)),
+                  },
+                },
+              ],
             },
           ],
         },
