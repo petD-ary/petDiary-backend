@@ -253,19 +253,19 @@ export class SchedulesService {
 
     // 반복 일정이 아니므로 schedule, instance delete
     if (editOptions === SCHEDULE_EDIT_OPTIONS.NONE) {
-      this.delete(options);
-      this.deleteInstance(instanceOptions);
+      await this.deleteInstance(instanceOptions);
+      await this.delete(options);
     }
 
     // 반복 일정 중에 하나만 삭제
     if (editOptions === SCHEDULE_EDIT_OPTIONS.ONLY_ONE) {
-      this.deleteInstance(instanceOptions);
+      await this.deleteInstance(instanceOptions);
     }
 
     // 반복 일정 전체 삭제
     if (editOptions === SCHEDULE_EDIT_OPTIONS.ALL) {
-      this.delete(options);
-      this.deleteInstance(instanceAllOptions);
+      await this.deleteInstance(instanceAllOptions);
+      await this.delete(options);
     }
 
     // 반복 일정 중 선택한 일정과 이후 일정 삭제
@@ -277,16 +277,16 @@ export class SchedulesService {
           where: { id: schedule.scheduleId },
         },
       );
-      this.deleteInstance(instanceSinceOptions);
+      await this.deleteInstance(instanceSinceOptions);
     }
   }
 
   async delete(options: DestroyOptions) {
-    return Schedule.destroy(options);
+    return await Schedule.destroy(options);
   }
 
   async deleteInstance(options: DestroyOptions) {
-    return ScheduleInstance.destroy(options);
+    return await ScheduleInstance.destroy(options);
   }
 
   /**
@@ -371,6 +371,7 @@ export class SchedulesService {
       },
     };
 
+    // 시작 또는 종료 시간이 지정된 날짜 범위 내에 포함되는 일정
     if (from && to) {
       options = {
         where: {
