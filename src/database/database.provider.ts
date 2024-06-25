@@ -6,6 +6,7 @@ import { ScheduleInstance } from 'src/schedules/entity/scheduleInstance.entity';
 import { Disease } from 'src/knowledges/entity/disease.entity';
 import { Symptom } from 'src/knowledges/entity/symptom.entity';
 import { DiseaseSymptomMap } from 'src/knowledges/entity/diseaseSymptomMap.entity';
+import { Signal } from 'src/knowledges/entity/signal.entity';
 
 export const databaseProviders = [
   {
@@ -29,6 +30,7 @@ export const databaseProviders = [
         Disease,
         Symptom,
         DiseaseSymptomMap,
+        Signal,
       ]);
       try {
         await sequelize.authenticate();
