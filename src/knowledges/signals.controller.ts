@@ -7,8 +7,9 @@ import {
   Param,
   Post,
   Put,
+  Req,
 } from '@nestjs/common';
-import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 
 import { SignalsService } from './signals.service';
 import {
@@ -58,8 +59,16 @@ export class SignalsController {
   @ApiOperation({
     summary: '행동 신호 정보',
   })
-  @Get('/signal/:type')
-  async get(@Param('type') type: string) {
+  @ApiQuery({
+    name: 'type',
+    required: false,
+    type: String,
+    description: '종류',
+    example: 'drinkAmount',
+  })
+  @Get('/signal')
+  async get(@Req() req) {
+    const { type } = req.query;
     const options = {
       where: {
         type,
@@ -67,6 +76,20 @@ export class SignalsController {
     };
 
     return await this.signalsService.getByAll(options);
+  }
+
+  @ApiOperation({
+    summary: '행동 신호 정보 상세',
+  })
+  @Get('/signal/:id')
+  async getById(@Param('id') id: string) {
+    const options = {
+      where: {
+        id,
+      },
+    };
+
+    return await this.signalsService.getBy(options);
   }
 
   @ApiOperation({

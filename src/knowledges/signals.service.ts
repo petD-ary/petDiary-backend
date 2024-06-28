@@ -22,6 +22,10 @@ export class SignalsService {
     return Signal.findAll(options);
   }
 
+  async getBy(options?: FindOptions) {
+    return Signal.findOne(options);
+  }
+
   async update(signalDto: SignalDto, options: UpdateOptions) {
     return Signal.update(signalDto, options);
   }
