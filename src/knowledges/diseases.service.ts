@@ -74,6 +74,10 @@ export class DiseasesService {
     return Disease.scope('findOne').findOne(options);
   }
 
+  async getSymptom(options: FindOptions) {
+    return Symptom.findAll(options);
+  }
+
   async update(diseaseDto: DiseaseDto, options: UpdateOptions) {
     const { symptoms, ...diseaseDetail } = diseaseDto;
     return Disease.update(diseaseDetail, options);
@@ -249,6 +253,21 @@ export class DiseasesService {
         include: [[Sequelize.literal(cursorExpression), 'cursor']],
       },
       limit: Number(size) + 1,
+    };
+
+    return options;
+  }
+
+  /**
+   * 주어진 매개변수를 기반으로 Sequelize FindOptions 객체를 생성
+   *
+   * @param search - 검색어
+   */
+  createSymptomOptions(search?: string): FindOptions {
+    const options = {
+      where: {
+        symptom: { [Op.like]: `%${search}%` },
+      },
     };
 
     return options;

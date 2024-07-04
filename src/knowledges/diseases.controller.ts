@@ -101,6 +101,23 @@ export class DiseasesController {
   }
 
   @ApiOperation({
+    summary: '질병 사전 증상 검색',
+  })
+  @ApiQuery({
+    name: 'search',
+    required: false,
+    type: String,
+    description: '검색어',
+    example: '귀',
+  })
+  @Get('/disease/symptom')
+  async getSymptom(@Req() req) {
+    const { search } = req.query;
+    const options = this.diseasesService.createSymptomOptions(search);
+    return await this.diseasesService.getSymptom(options);
+  }
+
+  @ApiOperation({
     summary: '질병 사전 상세',
   })
   @Get('/disease/:id')
