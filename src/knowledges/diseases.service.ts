@@ -67,7 +67,7 @@ export class DiseasesService {
   }
 
   async countByAll(options?: FindOptions) {
-    return Disease.count(options);
+    return Disease.count({ ...options, distinct: true });
   }
 
   async getBy(options: FindOptions) {
@@ -79,6 +79,7 @@ export class DiseasesService {
   }
 
   async update(diseaseDto: DiseaseDto, options: UpdateOptions) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { symptoms, ...diseaseDetail } = diseaseDto;
     return Disease.update(diseaseDetail, options);
   }
@@ -215,18 +216,30 @@ export class DiseasesService {
   /**
    * 주어진 매개변수를 기반으로 Sequelize FindOptions 객체를 생성
    *
-   * @param petType - 결과를 필터링할 애완동물 종류
-   * @param cursor - 페이지네이션을 위한 커서 값
-   * @param sort - 정렬 기준 필드와 정렬 순서. 예: `'riskLevel,high'`
-   * @param size - 페이지당 반환되는 결과 수
+   * @param {Object} options - 옵션 객체
+   * @param options.petType - 결과를 필터링할 애완동물 종류
+   * @param options.cursor - 페이지네이션을 위한 커서 값
+   * @param options.sort - 정렬 기준 필드와 정렬 순서. 예: `'riskLevel,high'`
+   * @param options.size - 페이지당 반환되는 결과 수
+   * @param options.symptomId - 증상 검색 id
+   * @param options.symptomSearch - 증상 검색 키워드
    * @returns - Sequelize FindOptions 객체
    */
-  createOptions(
-    petType?: string,
-    cursor?: string,
-    sort?: string,
-    size?: number,
-  ): FindOptions {
+  createOptions({
+    petType,
+    cursor,
+    sort,
+    size,
+    symptomId,
+    symptomSearch,
+  }: {
+    petType?: string;
+    cursor?: string;
+    sort?: string;
+    size?: number;
+    symptomId?: number;
+    symptomSearch?: string;
+  }): FindOptions {
     let cursorExpression = '';
     const [sortField, sortOrder] = sort?.split(',') || [];
     if (sortField === 'riskLevel' && sortOrder === 'high') {
@@ -254,6 +267,28 @@ export class DiseasesService {
       },
       limit: Number(size) + 1,
     };
+
+    if (symptomSearch) {
+      options['include'] = [
+        {
+          model: Symptom,
+          where: {
+            symptom: { [Op.like]: `%${symptomSearch}%` },
+          },
+        },
+      ];
+    }
+
+    if (symptomId) {
+      options['include'] = [
+        {
+          model: Symptom,
+          where: {
+            id: symptomId,
+          },
+        },
+      ];
+    }
 
     return options;
   }

@@ -1,5 +1,5 @@
 import { ApiProperty, OmitType, PickType } from '@nestjs/swagger';
-import { IsBoolean, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsNumber, IsString } from 'class-validator';
 
 export class SymptomDto {
   @IsNumber()

@@ -75,16 +75,32 @@ export class DiseasesController {
     description: '정렬 방식',
     example: 'riskLevel,high',
   })
+  @ApiQuery({
+    name: 'symptomSearch',
+    required: false,
+    type: String,
+    description: '증상 검색',
+    example: '귀',
+  })
+  @ApiQuery({
+    name: 'symptomId',
+    required: false,
+    type: String,
+    description: '증상 id',
+    example: '1',
+  })
   @Get('/disease')
   async get(@Req() req) {
-    const { petType, cursor, sort, size = 15 } = req.query;
-    const options = this.diseasesService.createOptions(
-      petType,
-      cursor,
-      sort,
+    const { petType, symptomId, symptomSearch, size = 15 } = req.query;
+    const options = this.diseasesService.createOptions({
       size,
-    );
-    const countOptions = this.diseasesService.createOptions(petType);
+      ...req.query,
+    });
+    const countOptions = this.diseasesService.createOptions({
+      petType,
+      symptomId,
+      symptomSearch,
+    });
     const [data, count] = await Promise.all([
       this.diseasesService.getByAll(options),
       this.diseasesService.countByAll(countOptions),
@@ -101,13 +117,13 @@ export class DiseasesController {
   }
 
   @ApiOperation({
-    summary: '질병 사전 증상 검색',
+    summary: '증상 리스트 검색',
   })
   @ApiQuery({
     name: 'search',
     required: false,
     type: String,
-    description: '검색어',
+    description: '검색',
     example: '귀',
   })
   @Get('/disease/symptom')
