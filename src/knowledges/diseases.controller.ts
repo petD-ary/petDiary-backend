@@ -19,7 +19,7 @@ import {
 } from './dto/disease.dto';
 
 @Controller('knowledges')
-@ApiTags('knowledges')
+@ApiTags('knowledges/disease')
 export class DiseasesController {
   constructor(private readonly diseasesService: DiseasesService) {}
 

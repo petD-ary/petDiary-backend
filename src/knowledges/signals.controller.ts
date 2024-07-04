@@ -19,7 +19,7 @@ import {
 } from './dto/signal.dto';
 
 @Controller('knowledges')
-@ApiTags('knowledges')
+@ApiTags('knowledges/signal')
 export class SignalsController {
   constructor(private readonly signalsService: SignalsService) {}
 
@@ -66,14 +66,17 @@ export class SignalsController {
     description: '종류',
     example: 'drinkAmount',
   })
+  @ApiQuery({
+    name: 'search',
+    required: false,
+    type: String,
+    description: '검색어',
+    example: '적정',
+  })
   @Get('/signal')
   async get(@Req() req) {
-    const { type } = req.query;
-    const options = {
-      where: {
-        type,
-      },
-    };
+    const { type, search } = req.query;
+    const options = this.signalsService.createSignalOptions(type, search);
 
     return await this.signalsService.getByAll(options);
   }

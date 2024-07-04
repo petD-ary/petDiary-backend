@@ -1,8 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { DestroyOptions, FindOptions, UpdateOptions } from 'sequelize';
+import { DestroyOptions, FindOptions, Op, UpdateOptions } from 'sequelize';
 
 import { SignalDto, SignalDtoWithoutId } from './dto/signal.dto';
 import { Signal } from './entity/signal.entity';
+import { Sequelize } from 'sequelize-typescript';
+
+interface SignalOptions extends FindOptions {
+  type?: string;
+}
 
 @Injectable()
 export class SignalsService {
@@ -32,5 +37,35 @@ export class SignalsService {
 
   async delete(options: DestroyOptions) {
     return Signal.destroy(options);
+  }
+
+  createSignalOptions(type, search) {
+    let options: SignalOptions = {
+      where: {
+        type,
+      },
+    };
+
+    if (search) {
+      options = {
+        where: {
+          ...options.where,
+          [Op.or]: [
+            Sequelize.literal(`EXISTS (
+              SELECT 1
+              FROM jsonb_each(summary)
+              WHERE CAST(value AS TEXT) ILIKE '%${search}%'
+            )`),
+            Sequelize.literal(`EXISTS (
+              SELECT 1
+              FROM jsonb_each(title)
+              WHERE CAST(value AS TEXT) ILIKE '%${search}%'
+            )`),
+          ],
+        },
+      };
+    }
+
+    return options;
   }
 }
