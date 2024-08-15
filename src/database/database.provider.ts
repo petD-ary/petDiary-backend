@@ -7,6 +7,7 @@ import { Disease } from 'src/knowledges/entity/disease.entity';
 import { Symptom } from 'src/knowledges/entity/symptom.entity';
 import { DiseaseSymptomMap } from 'src/knowledges/entity/diseaseSymptomMap.entity';
 import { Signal } from 'src/knowledges/entity/signal.entity';
+import { Food } from 'src/knowledges/entity/food.entity';
 
 export const databaseProviders = [
   {
@@ -31,6 +32,7 @@ export const databaseProviders = [
         Symptom,
         DiseaseSymptomMap,
         Signal,
+        Food,
       ]);
       try {
         await sequelize.authenticate();

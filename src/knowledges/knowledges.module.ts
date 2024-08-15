@@ -5,10 +5,12 @@ import { DiseasesController } from './diseases.controller';
 import { DiseasesService } from './diseases.service';
 import { SignalsController } from './signals.controller';
 import { SignalsService } from './signals.service';
+import { FoodsController } from './foods.controller';
+import { FoodsService } from './foods.service';
 
 @Module({
   imports: [AuthModule, UploadModule],
-  controllers: [DiseasesController, SignalsController],
-  providers: [DiseasesService, SignalsService],
+  controllers: [DiseasesController, SignalsController, FoodsController],
+  providers: [DiseasesService, SignalsService, FoodsService],
 })
 export class KnowledgesModule {}
