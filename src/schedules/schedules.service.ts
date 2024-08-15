@@ -405,6 +405,20 @@ export class SchedulesService {
                 },
               ],
             },
+            {
+              [Op.and]: [
+                {
+                  startTime: {
+                    [Op.lte]: new Date(this.convertDateFormat(from)),
+                  },
+                },
+                {
+                  endTime: {
+                    [Op.gte]: new Date(this.convertDateFormat(to)),
+                  },
+                },
+              ],
+            },
           ],
         },
       };

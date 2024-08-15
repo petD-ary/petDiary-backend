@@ -54,4 +54,9 @@ export class Schedule extends Model<Schedule> {
     type: DataType.STRING,
   })
   memo: string;
+
+  @Column({
+    type: DataType.STRING,
+  })
+  timeZone: string;
 }

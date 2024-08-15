@@ -17,6 +17,7 @@ const SCHEDULE_DTO_EXAMPLE = {
   START_TIME: '2024-05-05T10:00:00.000Z',
   END_TIME: '2024-05-05T11:00:00.000Z',
   MEMO: '이건 메모입니다..',
+  TIME_ZONE: 'Asia/Seoul',
 };
 
 export class ScheduleDto {
@@ -108,6 +109,15 @@ export class ScheduleDto {
   @IsString()
   @ApiProperty({ description: 'memo', example: SCHEDULE_DTO_EXAMPLE.MEMO })
   memo: string;
+
+  @Expose()
+  @Transform(({ obj }) => obj.scheduleInfo?.timeZone)
+  @IsString()
+  @ApiProperty({
+    description: 'timeZone',
+    example: SCHEDULE_DTO_EXAMPLE.TIME_ZONE,
+  })
+  timeZone: string;
 
   @Expose()
   @IsString()
