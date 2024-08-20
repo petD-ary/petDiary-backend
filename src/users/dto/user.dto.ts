@@ -58,3 +58,7 @@ export class UserInfoDto {
   @ApiProperty({ description: 'pet' })
   pet: PetDto;
 }
+
+export class UpdateNicknameDto extends PickType(UserDto, [
+  'nickname',
+] as const) {}

@@ -6,12 +6,13 @@ import {
   Post,
   Req,
   Param,
+  Put,
 } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
 import { UsersService } from './users.service';
 import { AuthGuard } from 'src/auth/auth.guard';
-import { LoginUserDto, UserInfoDto } from './dto/user.dto';
+import { LoginUserDto, UpdateNicknameDto, UserInfoDto } from './dto/user.dto';
 
 @Controller('users')
 @ApiTags('users')
@@ -69,6 +70,28 @@ export class UsersController {
         message: '나도 사랑해❤',
       };
     }
+    return;
+  }
+
+  @ApiOperation({
+    summary: '닉네임 변경',
+  })
+  @UseGuards(AuthGuard)
+  @Put('/nickname')
+  async updateNickname(
+    @Req() req,
+    @Body() updateNicknameDto: UpdateNicknameDto,
+  ) {
+    const { nickname } = updateNicknameDto;
+    const user = await this.usersService.getByNickname(nickname);
+
+    if (user) {
+      return {
+        message: '이미 등록되어 있는 닉네임입니다.',
+      };
+    }
+
+    await this.usersService.update({ nickname }, req.user);
     return;
   }
 }
