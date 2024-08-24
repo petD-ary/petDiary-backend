@@ -89,6 +89,15 @@ export class UsersService {
     });
   }
 
+  async getByRefreshToken(refreshToken: string) {
+    return User.findOne({
+      attributes: ['email', 'provider', 'status'],
+      where: {
+        refreshToken: refreshToken,
+      },
+    });
+  }
+
   async getByAll() {
     return User.findAll({
       raw: true,

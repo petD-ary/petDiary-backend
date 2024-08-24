@@ -1,7 +1,7 @@
-import { Controller, Get, Req, Res, UseGuards } from '@nestjs/common';
-import { Request, Response } from 'express';
+import { Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Request, Response } from 'express';
 
 import { AuthService } from './auth.service';
 
@@ -35,5 +35,13 @@ export class AuthController {
   @UseGuards(AuthGuard('google'))
   async loginGoogle(@Req() req: Request & IOAuthUser, @Res() res: Response) {
     return this.authService.OAuthLogin({ req, res });
+  }
+
+  @ApiOperation({
+    summary: 'accessToken 요청',
+  })
+  @Post('/token')
+  async getToken(@Req() req: Request, @Res() res: Response) {
+    this.authService.getToken({ req, res });
   }
 }

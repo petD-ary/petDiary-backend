@@ -35,6 +35,10 @@ export class UserDto {
   @IsString()
   @ApiProperty({ description: 'status' })
   status: STATUS;
+
+  @IsString()
+  @ApiProperty({ description: 'refreshToken' })
+  refreshToken: string;
 }
 
 export const PROVIDER = {

@@ -34,6 +34,12 @@ export class User extends Model<User> {
   })
   status: STATUS;
 
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+  })
+  refreshToken: string;
+
   @HasMany(() => Pet)
   pets: Pet[];
 }

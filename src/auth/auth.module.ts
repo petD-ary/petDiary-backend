@@ -11,13 +11,7 @@ import { GoogleStrategy } from './google.strategy';
 
 @Global()
 @Module({
-  imports: [
-    forwardRef(() => UsersModule),
-    JwtModule.register({
-      secret: 'process.env.JWT_SECRET', // 비밀키를 설정합니다.
-      signOptions: { expiresIn: '1d' }, // 토큰의 유효 기간을 설정합니다.
-    }),
-  ],
+  imports: [forwardRef(() => UsersModule), JwtModule.register({})],
   controllers: [AuthController],
   providers: [
     AuthService,
