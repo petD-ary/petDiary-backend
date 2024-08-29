@@ -7,8 +7,10 @@ import {
   Req,
   Param,
   Put,
+  Res,
 } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Response } from 'express';
 
 import { UsersService } from './users.service';
 import { AuthGuard } from 'src/auth/auth.guard';
@@ -37,6 +39,15 @@ export class UsersController {
   @Post('/login')
   async login(@Body() userDto: LoginUserDto) {
     return await this.usersService.normalLogin(userDto);
+  }
+
+  @ApiOperation({
+    summary: '로그아웃',
+    description: '로그아웃',
+  })
+  @Post('/logout')
+  async logout(@Req() req, @Res() res: Response) {
+    return await this.usersService.logout(req.user, res);
   }
 
   @ApiOperation({

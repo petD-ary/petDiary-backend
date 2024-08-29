@@ -6,6 +6,7 @@ import {
   forwardRef,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
+import { Response } from 'express';
 
 import { AuthService } from 'src/auth/auth.service';
 import { Pet } from 'src/pets/entity/pet.entity';
@@ -91,7 +92,7 @@ export class UsersService {
 
   async getByRefreshToken(refreshToken: string) {
     return User.findOne({
-      attributes: ['email', 'provider', 'status'],
+      attributes: ['id', 'email', 'provider', 'status'],
       where: {
         refreshToken: refreshToken,
       },
@@ -117,6 +118,21 @@ export class UsersService {
         returning: true,
       },
     );
+  }
+
+  async logout(user: UserDto, res: Response) {
+    this.update({ refreshToken: '' }, user);
+    res.clearCookie('accessToken', {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict',
+    });
+    res.clearCookie('refreshToken', {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict',
+    });
+    return res.json({});
   }
 
   async addInfo(userDto: UserDto, info: UserInfoDto) {
