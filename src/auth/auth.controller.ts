@@ -3,16 +3,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 
-import { AuthService } from './auth.service';
-
-interface IOAuthUser {
-  user: {
-    provider: string;
-    name: string;
-    email: string;
-    password: string;
-  };
-}
+import { AuthService, IOAuthUser } from './auth.service';
 
 @Controller('auth')
 @ApiTags('auth')
@@ -22,19 +13,19 @@ export class AuthController {
   @Get('/kakao')
   @UseGuards(AuthGuard('kakao'))
   async loginKakao(@Req() req: Request & IOAuthUser, @Res() res: Response) {
-    return this.authService.OAuthLogin({ req, res });
+    return this.authService.OAuthLogin(req, res);
   }
 
   @Get('/naver')
   @UseGuards(AuthGuard('naver'))
   async loginNaver(@Req() req: Request & IOAuthUser, @Res() res: Response) {
-    return this.authService.OAuthLogin({ req, res });
+    return this.authService.OAuthLogin(req, res);
   }
 
   @Get('/google')
   @UseGuards(AuthGuard('google'))
   async loginGoogle(@Req() req: Request & IOAuthUser, @Res() res: Response) {
-    return this.authService.OAuthLogin({ req, res });
+    return this.authService.OAuthLogin(req, res);
   }
 
   @ApiOperation({
@@ -42,6 +33,6 @@ export class AuthController {
   })
   @Post('/token')
   async getToken(@Req() req: Request, @Res() res: Response) {
-    this.authService.getToken({ req, res });
+    this.authService.getToken(req, res);
   }
 }

@@ -56,8 +56,14 @@ export class UsersController {
   })
   @UseGuards(AuthGuard)
   @Post('/info')
-  async addInfo(@Req() req, @Body() body: UserInfoDto) {
-    return await this.usersService.addInfo(req.user, body);
+  async addInfo(@Req() req, @Res() res, @Body() body: UserInfoDto) {
+    await this.usersService.addInfo(req.user, body);
+    res.clearCookie('status', {
+      httpOnly: true,
+      sameSite: 'strict',
+      secure: true,
+    });
+    return res.json({});
   }
 
   @ApiOperation({

@@ -1,9 +1,14 @@
 import { HttpStatus, Inject, Injectable, forwardRef } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { Request, Response } from 'express';
 
 import { UserDto } from 'src/users/dto/user.dto';
 import { STATUS } from 'src/users/entity/user.entity';
 import { UsersService } from 'src/users/users.service';
+
+export interface IOAuthUser {
+  user: UserDto;
+}
 
 @Injectable()
 export class AuthService {
@@ -38,7 +43,7 @@ export class AuthService {
     return refreshToken;
   }
 
-  async OAuthLogin({ req, res }) {
+  async OAuthLogin(req: Request & IOAuthUser, res: Response) {
     let user = await this.usersService.getByEmailAndProvider(req.user);
 
     // 회원가입이 안되어있다면? 회원가입
@@ -67,11 +72,14 @@ export class AuthService {
       secure: true,
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
+    res.cookie('status', user.status, {
+      httpOnly: true,
+      sameSite: 'none',
+      secure: true,
+    });
 
-    if (user.status === STATUS.TEMPORARY) {
-      return res.redirect('http://localhost:3000/account');
-    }
-    return res.redirect('http://localhost:3000');
+    const origin = req.query.origin;
+    return res.redirect(`${origin}/auth?refreshToken=${refreshToken}`);
   }
 
   /**
@@ -81,13 +89,13 @@ export class AuthService {
    * 유효한 refreshToken이 제공되면 새로운 accessToken을 생성하여
    * 클라이언트의 쿠키에 저장
    */
-  async getToken({ req, res }) {
+  async getToken(req: Request, res: Response) {
     const refreshToken = req.cookies.refreshToken;
 
     if (!refreshToken) {
       return res
         .status(400)
-        .json({ message: 'refreshToken을 찾을 수 없습니다.' });
+        .json({ message: '리프레시 토큰을 찾을 수 없습니다.' });
     }
 
     try {
@@ -98,7 +106,7 @@ export class AuthService {
       if (error.name === 'TokenExpiredError') {
         return res
           .status(HttpStatus.UNAUTHORIZED)
-          .json({ message: 'refreshToken이 만료되었습니다.' });
+          .json({ message: '리프레시 토큰이 만료되었습니다.' });
       } else if (error.name === 'JsonWebTokenError') {
         return res
           .status(HttpStatus.UNAUTHORIZED)
@@ -121,6 +129,9 @@ export class AuthService {
     return res.json();
   }
 
+  /**
+   * DB에서 refreshToken로 사용자를 찾아, 사용자 정보로 accessToken 발급
+   */
   async makeAccessTokenByRefreshToken(refreshToken: string) {
     const user = await this.usersService.getByRefreshToken(refreshToken);
     const accessToken = this.makeAccessToken(user);
