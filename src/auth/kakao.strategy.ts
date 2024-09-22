@@ -15,6 +15,28 @@ export class KakaoStrategy extends PassportStrategy(Strategy, 'kakao') {
     return {
       email: profile._json.kakao_account.email,
       provider: profile.provider,
+      accessToken,
+    };
+  }
+}
+
+@Injectable()
+export class KakaoWithdrawStrategy extends PassportStrategy(
+  Strategy,
+  'kakao-withdraw',
+) {
+  constructor() {
+    super({
+      clientID: process.env.KAKAO_CLIENT_ID,
+      callbackURL: process.env.KAKAO_WITHDRAW_CALLBACK_URL,
+    });
+  }
+
+  async validate(accessToken: string, refreshToken: string, profile: any) {
+    return {
+      email: profile._json.kakao_account.email,
+      provider: profile.provider,
+      accessToken,
     };
   }
 }

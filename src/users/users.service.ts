@@ -6,20 +6,25 @@ import {
   forwardRef,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import { Response } from 'express';
+import { Request, Response } from 'express';
+import { DestroyOptions } from 'sequelize';
 
-import { AuthService } from 'src/auth/auth.service';
-import { Pet } from 'src/pets/entity/pet.entity';
+import { AuthService, IOAuthUser } from 'src/auth/auth.service';
+import { PetsService } from 'src/pets/pets.service';
+import { SchedulesService } from 'src/schedules/schedules.service';
 import { LoginUserDto, PROVIDER, UserDto, UserInfoDto } from './dto/user.dto';
 import { STATUS, User } from './entity/user.entity';
 
 @Injectable()
 export class UsersService {
   constructor(
-    @Inject(forwardRef(() => AuthService)) private authService: AuthService,
+    @Inject(forwardRef(() => AuthService))
+    private readonly authService: AuthService,
+    private readonly petsService: PetsService,
+    private readonly schedulesService: SchedulesService,
   ) {}
 
-  /*
+  /**
    * 소셜 로그인이 아닌 기존 회원 가입을 통한 유저 생성
    */
   async createNormalUser(userDto: LoginUserDto) {
@@ -34,7 +39,7 @@ export class UsersService {
     return;
   }
 
-  /*
+  /**
    * 소셜 로그인이 아닌 기존 로그인
    */
   async normalLogin(userDto: LoginUserDto) {
@@ -120,6 +125,16 @@ export class UsersService {
     );
   }
 
+  async delete(options: DestroyOptions) {
+    return User.destroy(options);
+  }
+
+  /**
+   * 로그 아웃
+   *
+   * refrechToken db 에서 삭제,
+   * cookie clear
+   */
   async logout(user: UserDto, res: Response) {
     this.update({ refreshToken: '' }, user);
     res.clearCookie('accessToken', {
@@ -135,13 +150,39 @@ export class UsersService {
     return res.json({});
   }
 
+  /**
+   * 소셜 로그인이 아닌 기존 로그인
+   *
+   * pets, schedules, user 정보 삭제,
+   * cookie clear
+   */
+  async withdraw(req: Request & IOAuthUser, res: Response) {
+    const user = await this.getByEmailAndProvider(req.user);
+    await this.petsService.delete({ where: { userId: user.id } });
+    await this.schedulesService.deleteByUserId(user.id);
+    await this.delete({ where: { id: user.id } });
+
+    res.clearCookie('accessToken', {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict',
+    });
+    res.clearCookie('refreshToken', {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict',
+    });
+    const origin = req.query.origin;
+    return res.redirect(`${origin}/login`);
+  }
+
   async addInfo(userDto: UserDto, info: UserInfoDto) {
     const user = await this.getByEmailAndProvider(userDto);
     const updateData = { nickname: info.user.nickname, status: STATUS.ACTIVE };
     await this.update(updateData, user);
 
     info.pet.userId = user.id;
-    await Pet.create(info.pet);
+    await this.petsService.create(info.pet);
     return;
   }
 

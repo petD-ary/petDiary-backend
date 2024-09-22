@@ -289,6 +289,17 @@ export class SchedulesService {
     return await ScheduleInstance.destroy(options);
   }
 
+  async deleteByUserId(userId: number) {
+    const instances = await ScheduleInstance.findAll({ where: { userId } });
+    if (instances.length === 0) {
+      return;
+    }
+
+    const scheduleIds = instances.map((instance) => instance.scheduleId);
+    await this.deleteInstance({ where: { userId } });
+    await this.delete({ where: { id: scheduleIds } });
+  }
+
   /**
    * `repeat` 에 따라 일정 시간 계산
    */

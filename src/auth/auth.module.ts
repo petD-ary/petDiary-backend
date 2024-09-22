@@ -3,7 +3,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { AuthService } from './auth.service';
 import { AuthGuard } from './auth.guard';
 import { JwtStrategy } from './jwt.strategy';
-import { KakaoStrategy } from './kakao.strategy';
+import { KakaoStrategy, KakaoWithdrawStrategy } from './kakao.strategy';
 import { AuthController } from './auth.controller';
 import { UsersModule } from 'src/users/users.module';
 import { NaverStrategy } from './naver.strategy';
@@ -18,6 +18,7 @@ import { GoogleStrategy } from './google.strategy';
     AuthGuard,
     JwtStrategy,
     KakaoStrategy,
+    KakaoWithdrawStrategy,
     NaverStrategy,
     GoogleStrategy,
   ],
@@ -26,6 +27,7 @@ import { GoogleStrategy } from './google.strategy';
     AuthGuard,
     JwtStrategy,
     KakaoStrategy,
+    KakaoWithdrawStrategy,
     NaverStrategy,
     GoogleStrategy,
   ],

@@ -4,16 +4,27 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 
 import { AuthService, IOAuthUser } from './auth.service';
+import { UsersService } from 'src/users/users.service';
 
 @Controller('auth')
 @ApiTags('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly usersService: UsersService,
+  ) {}
 
   @Get('/kakao')
   @UseGuards(AuthGuard('kakao'))
   async loginKakao(@Req() req: Request & IOAuthUser, @Res() res: Response) {
     return this.authService.OAuthLogin(req, res);
+  }
+
+  @Get('/kakao/withdraw')
+  @UseGuards(AuthGuard('kakao-withdraw'))
+  async withdrawKakao(@Req() req: Request & IOAuthUser, @Res() res: Response) {
+    await this.authService.unlinkKakaoUser(req);
+    return await this.usersService.withdraw(req, res);
   }
 
   @Get('/naver')

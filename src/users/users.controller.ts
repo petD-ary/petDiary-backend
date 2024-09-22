@@ -45,6 +45,7 @@ export class UsersController {
     summary: '로그아웃',
     description: '로그아웃',
   })
+  @UseGuards(AuthGuard)
   @Post('/logout')
   async logout(@Req() req, @Res() res: Response) {
     return await this.usersService.logout(req.user, res);

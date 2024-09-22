@@ -1,13 +1,14 @@
 import { HttpStatus, Inject, Injectable, forwardRef } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Request, Response } from 'express';
+import axios from 'axios';
 
 import { UserDto } from 'src/users/dto/user.dto';
 import { STATUS } from 'src/users/entity/user.entity';
 import { UsersService } from 'src/users/users.service';
 
 export interface IOAuthUser {
-  user: UserDto;
+  user: UserDto & { accessToken: string };
 }
 
 @Injectable()
@@ -23,6 +24,29 @@ export class AuthService {
     const refreshToken = this.makeRefreshToken(user);
     await this.usersService.update({ refreshToken }, user);
     return { accessToken, refreshToken };
+  }
+
+  async unlinkKakaoUser(req: Request & IOAuthUser) {
+    const accessToken = req.user.accessToken;
+
+    try {
+      await axios.post(
+        'https://kapi.kakao.com/v1/user/unlink',
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        },
+      );
+      return true;
+    } catch (error) {
+      console.error(
+        'Error unlinking Kakao user:',
+        error.response?.data || error.message,
+      );
+      return false;
+    }
   }
 
   makeAccessToken(user: UserDto) {
@@ -79,7 +103,9 @@ export class AuthService {
     });
 
     const origin = req.query.origin;
-    return res.redirect(`${origin}/auth?refreshToken=${refreshToken}`);
+    return res.redirect(
+      `${origin}/auth?refreshToken=${refreshToken}&status=${user.status}`,
+    );
   }
 
   /**
