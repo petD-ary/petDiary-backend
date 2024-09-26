@@ -20,9 +20,25 @@ export class AuthController {
     return this.authService.OAuthLogin(req, res);
   }
 
+  @Get('/kakao-dev')
+  @UseGuards(AuthGuard('kakao-dev'))
+  async loginKakaoDev(@Req() req: Request & IOAuthUser, @Res() res: Response) {
+    return this.authService.OAuthLogin(req, res);
+  }
+
   @Get('/kakao/withdraw')
-  @UseGuards(AuthGuard('kakao-withdraw'))
+  @UseGuards(AuthGuard('kakao/withdraw'))
   async withdrawKakao(@Req() req: Request & IOAuthUser, @Res() res: Response) {
+    await this.authService.unlinkKakaoUser(req);
+    return await this.usersService.withdraw(req, res);
+  }
+
+  @Get('/kakao-dev/withdraw')
+  @UseGuards(AuthGuard('kakao-dev/withdraw'))
+  async withdrawKakaoDev(
+    @Req() req: Request & IOAuthUser,
+    @Res() res: Response,
+  ) {
     await this.authService.unlinkKakaoUser(req);
     return await this.usersService.withdraw(req, res);
   }

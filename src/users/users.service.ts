@@ -151,7 +151,7 @@ export class UsersService {
   }
 
   /**
-   * 소셜 로그인이 아닌 기존 로그인
+   * 회원 탈퇴
    *
    * pets, schedules, user 정보 삭제,
    * cookie clear

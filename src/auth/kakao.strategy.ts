@@ -21,14 +21,53 @@ export class KakaoStrategy extends PassportStrategy(Strategy, 'kakao') {
 }
 
 @Injectable()
+export class KakaoDevStrategy extends PassportStrategy(Strategy, 'kakao-dev') {
+  constructor() {
+    super({
+      clientID: process.env.KAKAO_CLIENT_ID,
+      callbackURL: process.env.KAKAO_DEV_CALLBACK_URL,
+    });
+  }
+
+  async validate(accessToken: string, refreshToken: string, profile: any) {
+    return {
+      email: profile._json.kakao_account.email,
+      provider: profile.provider,
+      accessToken,
+    };
+  }
+}
+
+@Injectable()
 export class KakaoWithdrawStrategy extends PassportStrategy(
   Strategy,
-  'kakao-withdraw',
+  'kakao/withdraw',
 ) {
   constructor() {
     super({
       clientID: process.env.KAKAO_CLIENT_ID,
       callbackURL: process.env.KAKAO_WITHDRAW_CALLBACK_URL,
+    });
+  }
+
+  async validate(accessToken: string, refreshToken: string, profile: any) {
+    return {
+      email: profile._json.kakao_account.email,
+      provider: profile.provider,
+      accessToken,
+    };
+  }
+}
+
+@Injectable()
+export class KakaoDevWithdrawStrategy extends PassportStrategy(
+  Strategy,
+  'kakao-dev/withdraw',
+) {
+  constructor() {
+    super({
+      clientID: process.env.KAKAO_CLIENT_ID,
+      callbackURL: process.env.KAKAO_DEV_WITHDRAW_CALLBACK_URL,
     });
   }
 
