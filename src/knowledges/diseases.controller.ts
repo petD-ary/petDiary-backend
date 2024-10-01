@@ -101,11 +101,11 @@ export class DiseasesController {
       symptomId,
       symptomSearch,
     });
-    const [data, count] = await Promise.all([
+    const [data, totalCount] = await Promise.all([
       this.diseasesService.getByAll(options),
       this.diseasesService.countByAll(countOptions),
     ]);
-    const totalPages = Math.ceil(count / size);
+    const totalPages = Math.ceil(totalCount / size);
     // 요청할 때 size + 1 로 요청. 요청한 데이터 양이 실제 반환된 데이터 양보다 작은 경우, 마지막 페이지로 판별.
     const isEnd = data.length <= size;
 
@@ -113,6 +113,7 @@ export class DiseasesController {
       data: data.slice(0, size),
       isEnd,
       totalPages,
+      totalCount,
     };
   }
 
