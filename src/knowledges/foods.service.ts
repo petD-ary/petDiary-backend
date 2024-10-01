@@ -43,11 +43,11 @@ export class FoodsService {
    * 주어진 매개변수를 기반으로 Sequelize FindOptions 객체를 생성
    *
    * @param type 타입 필터
-   * @param search 정렬 기준 필드와 정렬 순서. 예: `'cookedOrNot,high'`
-   * @param sort summary, title json 데이터 중 value 에서 검색하기 위한 키워드
+   * @param search summary, title json 데이터 중 value 에서 검색하기 위한 키워드
+   * @param foodCookType 조리 타입 필터. 예: `cooking`, `preparation`
    * @returns - Sequelize FindOptions 객체
    */
-  createFoodOptions(type: string, search: string, sort: string) {
+  createFoodOptions(type: string, search: string, foodCookType: string) {
     const options: FoodOptions = {
       where: {
         type,
@@ -72,27 +72,41 @@ export class FoodsService {
       };
     }
 
-    if (sort) {
-      const [key, direction] = sort.split(',');
-
-      if (key === 'cookedOrNot') {
-        // 해당 배열 순서대로 정렬
-        const priority = ['필수', '권장', '-'];
-        const sortDirection = direction === 'high' ? 'ASC' : 'DESC';
-
-        // PostgreSQL array_position 함수를 사용해서 priority 순서로 정렬
-        options.order = [
-          [
-            Sequelize.fn(
-              'array_position',
-              Sequelize.literal(`ARRAY['${priority.join("','")}']`),
-              Sequelize.literal(`"tag"->>'cookedOrNot'`),
-            ),
-            sortDirection,
-          ],
-        ];
-      }
+    if (foodCookType) {
+      options.where = {
+        ...options.where,
+        [Op.and]: [
+          Sequelize.literal(`EXISTS (
+              SELECT 1
+              FROM jsonb_each(tag)
+              WHERE CAST(value AS TEXT) ILIKE '%${foodCookType}%'
+            )`),
+        ],
+      };
     }
+
+    // sort 기능이 filter 로 변경됨
+    // if (sort) {
+    //   const [key, direction] = sort.split(',');
+
+    //   if (key === 'cookedOrNot') {
+    //     // 해당 배열 순서대로 정렬
+    //     const priority = ['필수', '권장', '-'];
+    //     const sortDirection = direction === 'high' ? 'ASC' : 'DESC';
+
+    //     // PostgreSQL array_position 함수를 사용해서 priority 순서로 정렬
+    //     options.order = [
+    //       [
+    //         Sequelize.fn(
+    //           'array_position',
+    //           Sequelize.literal(`ARRAY['${priority.join("','")}']`),
+    //           Sequelize.literal(`"tag"->>'cookedOrNot'`),
+    //         ),
+    //         sortDirection,
+    //       ],
+    //     ];
+    //   }
+    // }
 
     return options;
   }

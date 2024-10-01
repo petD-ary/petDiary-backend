@@ -67,16 +67,20 @@ export class FoodsController {
     example: '비타민A',
   })
   @ApiQuery({
-    name: 'sort',
+    name: 'foodCookType',
     required: false,
     type: String,
-    description: '정렬 방식(cookedOrNot,high, cookedOrNot,low)',
-    example: 'cookedOrNot,high',
+    description: '조리 종류(cooking, preparation)',
+    example: 'preparation',
   })
   @Get('/food')
   async get(@Req() req) {
-    const { type, search, sort } = req.query;
-    const options = this.foodsService.createFoodOptions(type, search, sort);
+    const { type, search, foodCookType } = req.query;
+    const options = this.foodsService.createFoodOptions(
+      type,
+      search,
+      foodCookType,
+    );
 
     return await this.foodsService.getByAll(options);
   }
